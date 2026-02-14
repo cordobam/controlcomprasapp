@@ -42,9 +42,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import androidx.compose.animation.core.copy
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import com.example.controlcomprasapp.model.ItemTicket
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +75,7 @@ fun FacturaScreenMetodo() {
     val imagenurl = imagenUriString?.let { Uri.parse(it) }
     var textoOCR by rememberSaveable { mutableStateOf("") }
     var lineasOCR by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var items by rememberSaveable { mutableStateOf<List<ItemTicket>>(emptyList()) }
     val mimeType = imagenurl?.let { context.contentResolver.getType(it) }
 
     val cameraLuncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture())
@@ -105,7 +115,9 @@ fun FacturaScreenMetodo() {
             }
         }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp))
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp))
     {
         Button( onClick = {
             permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -124,9 +136,18 @@ fun FacturaScreenMetodo() {
                 imagenurl?.let { uri ->
                     leerTextoUniversalOCR(context, uri) { texto ->
 
-                        textoOCR = texto
-                        lineasOCR = texto.lines()
+                        val lineas = texto
+                            .lines()
+                            .map { it.trim() }
                             .filter { it.isNotBlank() }
+
+                        lineasOCR = lineas
+
+                        items = parsearItemsTicket(lineasOCR)
+
+                        Log.d("OCR_FULL", texto)
+                        Log.d("OCR_LINES", lineas.toString())
+                        Log.d("OCR_ITEMS", items.toString())
                     }
                 }
             }) {
@@ -134,25 +155,30 @@ fun FacturaScreenMetodo() {
             }
         }
 
-        imagenurl?.let { uri ->
-
-            if (mimeType?.contains("pdf") == true) {
-                PdfPreview(uri)   // tu composable
-            } else {
-                AsyncImage(
-                    model = uri,
-                    contentDescription = "Factura",
-                    modifier = Modifier.fillMaxWidth()
-                )
+        Box(modifier = Modifier
+            .height(200.dp)
+            .fillMaxWidth()) {
+            imagenurl?.let { uri ->
+                if (mimeType?.contains("pdf") == true) {
+                    PdfPreview(uri)
+                } else {
+                    AsyncImage(model = uri, contentDescription = null)
+                }
             }
         }
 
-        LazyColumn {
-            items(lineasOCR.size) { i ->
-                Text(
-                    text = lineasOCR[i],
-                    modifier = Modifier.padding(4.dp)
-                )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // <--- ESTO hace que la lista se vea y sea scrolleable
+                .background(Color.LightGray.copy(alpha = 0.2f)) // Solo para debug, para ver el área
+        ) {
+            items(items) { item ->
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text(item.nombre, fontWeight = FontWeight.Bold)
+                    Text("Cant: ${item.cantidad} | Unit: ${item.precioUnitario} | Total: ${item.total}")
+                    HorizontalDivider()
+                }
             }
         }
     }
@@ -185,26 +211,45 @@ fun leerTextoConOcr(context: Context,uri: Uri,onResult: (String) -> Unit)
 fun pdfPrimeraPaginaBitmap(
     context: Context,
     uri: Uri
-): Bitmap? {
+): Bitmap? { return try {
 
     val pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
     val renderer = PdfRenderer(pfd)
 
     val page = renderer.openPage(0)
 
+    val scale = 4f
+
+    val width = (page.width * scale).toInt()
+    val height = (page.height * scale).toInt()
+
     val bitmap = Bitmap.createBitmap(
-        page.width,
-        page.height,
+        width,
+        height,
         Bitmap.Config.ARGB_8888
     )
 
-    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+    // --- PASO CRUCIAL: Pintar el fondo de blanco ---
+    val canvas = android.graphics.Canvas(bitmap)
+    canvas.drawColor(android.graphics.Color.WHITE)
+    // -----------------------------------------------
+
+
+    val matrix = Matrix()
+    matrix.setScale(scale, scale)
+
+    page.render(bitmap, null, matrix, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
 
     page.close()
     renderer.close()
     pfd.close()
 
-    return bitmap
+    bitmap
+
+    } catch (e: Exception) {
+        Log.e("PDF_ERROR", "Error renderizando PDF", e)
+        null
+    }
 }
 
 @Composable
@@ -252,3 +297,76 @@ fun leerTextoUniversalOCR(
         .addOnSuccessListener { onResult(it.text) }
         .addOnFailureListener { onResult("ERROR OCR") }
 }
+
+
+fun parsearItemsTicket(lineas: List<String>): List<ItemTicket> {
+
+    val items = mutableListOf<ItemTicket>()
+
+    fun esCodigo(l: String) =
+        l.matches(Regex("""\d{8,}"""))
+
+    fun esDescuento(l: String) =
+        l.uppercase().startsWith("MC ")
+
+    fun esBasura(l: String): Boolean {
+        val u = l.uppercase()
+        return esCodigo(u) ||
+                esDescuento(u) ||
+                u.contains("CUIT") ||
+                u.contains("IVA") ||
+                u.contains("FACTURA") ||
+                u.contains("TOTAL") ||
+                u.contains("SUBTOTAL") ||
+                u.contains("CAJA") ||
+                u.contains("FECHA") ||
+                u.length < 4
+    }
+
+    for (i in lineas.indices) {
+
+        val linea = lineas[i]
+
+        if (linea.contains(" x ") || linea.contains(" X ")) {
+
+            val partes = linea
+                .replace(",", ".")
+                .split("x", "X")
+
+            if (partes.size < 2) continue
+
+            val cantidad = partes[0].trim().toIntOrNull() ?: continue
+
+            val precio = partes[1]
+                .replace(" ", "")
+                .toDoubleOrNull()
+                ?: continue
+
+            // 🔍 buscar nombre real hacia arriba
+            var nombre = "ITEM"
+
+            for (j in i - 1 downTo 0) {
+                val cand = lineas[j].trim()
+
+                if (!esBasura(cand) &&
+                    cand.any { it.isLetter() }) {
+
+                    nombre = cand
+                    break
+                }
+            }
+
+            items.add(
+                ItemTicket(
+                    nombre = nombre,
+                    cantidad = cantidad,
+                    precioUnitario = precio,
+                    total = cantidad * precio
+                )
+            )
+        }
+    }
+
+    return items
+}
+
