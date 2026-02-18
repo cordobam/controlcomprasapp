@@ -1,4 +1,4 @@
-package com.example.controlcomprasapp.model
+package com.example.controlcomprasapp.domain.model
 
 data class ItemTicket(
     val nombre: String,
