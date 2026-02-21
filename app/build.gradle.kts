@@ -60,8 +60,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-
-
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
-
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 }

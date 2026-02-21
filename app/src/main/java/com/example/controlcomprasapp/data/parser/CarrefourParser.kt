@@ -7,13 +7,8 @@ import com.example.controlcomprasapp.domain.parser.TicketParser
 class CarrefourParser : TicketParser {
     override fun puedeParsear(texto: String): Boolean {
 
-        Log.d("PARSER_CHECK", "Texto recibido:")
-        Log.d("PARSER_CHECK", texto)
-
         val resultado = texto.contains("Carrefour", ignoreCase = true)
         //return texto.contains("Carrefour", ignoreCase = true)
-
-        Log.d("PARSER_CHECK", "Resultado contains: $resultado")
 
         return resultado
     }
@@ -42,14 +37,12 @@ class CarrefourParser : TicketParser {
                     nombreEncontrado = parteAntesDelPrecio
                 }
 
-                // 2. Si no estaba en la misma línea, buscar en las 3 líneas anteriores
+
+                // 2. Si no estaba en la misma línea, buscar SOLO en la línea anterior
                 if (nombreEncontrado == null) {
-                    for (j in (i - 1) downTo maxOf(0, i - 3)) {
-                        val cand = lineas[j].trim()
-                        if (esNombrePotencial(cand)) {
-                            nombreEncontrado = cand
-                            break
-                        }
+                    val lineaAnterior = lineas.getOrNull(i - 1)?.trim()
+                    if (lineaAnterior != null && esNombrePotencial(lineaAnterior)) {
+                        nombreEncontrado = lineaAnterior
                     }
                 }
 
@@ -72,25 +65,32 @@ class CarrefourParser : TicketParser {
 
 
     fun esNombrePotencial(l: String): Boolean {
-        val u = l.uppercase().trim()
+        val u = l
+            .replace(Regex("\\s+"), " ")
+            .uppercase()
+            .trim()
+
+        Log.d("PARSER", u.take(5).map { it.code }.toString())
 
         // 1. Filtros de palabras prohibidas (Rubros y Datos Fiscales)
         val listaNegra = listOf(
             "ALMACEN", "CARNICERIA", "BEBIDAS", "FRUTAS", "VERDURAS", "PERFUMERIA", "LIMPIEZA",
             "FACTURA", "CONSUMIDOR FINAL", "COD.006", "SUBTOTAL", "TOTAL", "CAE", "CUIT",
             "PAGO", "TARJETA", "CAJERO", "FECHA", "HORA", "P.V. NRO", "INICIO ACTIVIDAD",
-            "ORIENTACION AL CONSUMIDOR", "RESPONSABLE INSCRIPTO"
+            "ORIENTACION AL CONSUMIDOR", "RESPONSABLE INSCRIPTO", "OTROS"
         )
 
-        if (listaNegra.any { u.contains(it) }) return false
+        if (listaNegra.any { u == it }) return false
 
         // 2. Filtros de formato
         if (u.startsWith("MC ")) return false // Descuentos "Mi Carrefour"
         if (u.contains("---")) return false // Líneas separadoras
+        if (u.contains("BOLSAS NEGRAS")) return false
         if (u.matches(Regex(""".*\d{10,}.*"""))) return false // Códigos de barras (EAN13)
         if (u == "BEBIDAS") return false
         if (u == "CARNICERIA") return false
         if (u == "ALMACEN") return false
+        if (u == "OTROS") return false
 
         // 3. Validaciones de contenido
         val letras = l.count { it.isLetter() }
