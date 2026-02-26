@@ -4,12 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.controlcomprasapp.ui.theme.ControlcomprasappTheme
-import androidx.compose.runtime.*
 import com.example.controlcomprasapp.data.local.datasource.TicketLocalDataSource
 import com.example.controlcomprasapp.data.parser.CarrefourParser
 import com.example.controlcomprasapp.data.repository.TicketRepository
 import com.example.controlcomprasapp.domain.parser.ParserManager
-import com.example.controlcomprasapp.ui.screens.FacturaScreen
+import com.example.controlcomprasapp.ui.navegation.AppNavigation
+import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
 import com.example.controlcomprasapp.viewmodel.FacturaViewModelFactory
 
 
@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
             val factory = FacturaViewModelFactory(repo, parseManager)
 
             ControlcomprasappTheme {
-                FacturaScreen(factory = factory)
+                AppNavigation(factory = factory)
             }
         }
     }
