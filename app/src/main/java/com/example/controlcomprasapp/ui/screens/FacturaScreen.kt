@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -89,30 +90,7 @@ fun FacturaScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
-        Button(onClick = {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }) {
-            Text("Sacar Foto")
-        }
-
-        Button(onClick = {
-            galeriaLauncher.launch(arrayOf("image/*", "application/pdf"))
-        }) {
-            Text("Elegir de Galería")
-        }
-
-        Button(onClick = {
-            imagenUri?.let { viewModel.procesarUri(context, it) }
-        }) {
-            Text("Leer OCR")
-        }
-
-        Button(onClick = {
-            viewModel.guardar()
-        }) {
-            Text("Guardar en DB")
-        }
-
+        // 🔹 PREVIEW ARRIBA
         Box(
             modifier = Modifier
                 .height(200.dp)
@@ -124,11 +102,66 @@ fun FacturaScreen(
                 if (mime?.contains("pdf") == true) {
                     PdfPreview(uri)
                 } else {
-                    AsyncImage(model = uri, contentDescription = null)
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
         }
 
+        // 🔹 BOTONES 2x2
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Sacar Foto")
+                }
+
+                Button(
+                    onClick = {
+                        galeriaLauncher.launch(arrayOf("image/*", "application/pdf"))
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Elegir de Galería")
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = {
+                        imagenUri?.let { viewModel.procesarUri(context, it) }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Leer OCR")
+                }
+
+                Button(
+                    onClick = {
+                        viewModel.guardar()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Guardar en DB")
+                }
+            }
+        }
+
+        // 🔹 LISTA ABAJO
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
