@@ -12,6 +12,7 @@ import com.example.controlcomprasapp.viewmodel.FacturaViewModelFactory
 import com.example.controlcomprasapp.ui.components.TopBar
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
 import com.example.controlcomprasapp.ui.screens.home.HomeScreen
+import com.example.controlcomprasapp.ui.screens.productos.ProductViewScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +41,10 @@ fun AppNavigation(factory: FacturaViewModelFactory) {
                     factory = factory,
                     navController = navController
                 )
+            }
+
+            composable(Screen.Productos.route) {
+                ProductViewScreen()
             }
         }
     }
