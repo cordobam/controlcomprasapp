@@ -32,21 +32,13 @@ class FacturaViewModel(
     fun procesarUri(context: Context, uri: Uri) {
         OcrProcessor.leerTextoUniversalOCR(context, uri) { lineas ->
 
-            Log.d("OCR_DEBUG", "Cantidad de lineas: ${lineas.size}")
-
             val textoCompleto = lineas.joinToString ("\n")
-
-            lineas.forEach {
-                Log.d("OCR_LINEA", it)
-            }
 
             val parser = parserManager.obtenerParse(textoCompleto)
 
             if (parser != null){
                 items = parser.parser(lineas)
-                Log.d("OCR_DEBUG", "Parser encontrado")
             } else {
-                Log.d("OCR_DEBUG", "No se encontró parser")
                 items = emptyList<ItemTicket>()
             }
 

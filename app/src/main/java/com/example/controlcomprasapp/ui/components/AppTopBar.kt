@@ -52,6 +52,14 @@ fun TopBar(navController: NavController) {
                         navController.navigate(Screen.Facturas.route)
                     }
                 )
+
+                DropdownMenuItem(
+                    text = { Text("Productos Cargados") },
+                    onClick = {
+                        expanded = false
+                        navController.navigate(Screen.Productos.route)
+                    }
+                )
             }
         }
     )
