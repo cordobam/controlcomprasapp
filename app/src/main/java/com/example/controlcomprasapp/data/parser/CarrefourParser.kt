@@ -1,6 +1,7 @@
 package com.example.controlcomprasapp.data.parser
 
 import android.util.Log
+import com.example.controlcomprasapp.data.local.dto.TicketParseado
 import com.example.controlcomprasapp.domain.model.ItemTicket
 import com.example.controlcomprasapp.domain.parser.TicketParser
 
@@ -13,8 +14,10 @@ class CarrefourParser : TicketParser {
         return resultado
     }
 
-    override fun parser(lineas: List<String>): List<ItemTicket> {
+    override fun parser(lineas: List<String>): TicketParseado  {
         val items = mutableListOf<ItemTicket>()
+        val establecimiento = "Carrefour"
+        val fecha = obtenerFecha(lineas)
 
         // Regex para detectar cantidad x precio (ej: 1 x 4889,00)
         val regexPrecio = Regex("""(\d+)\s*[xX]\s*([\d,.]+)""")
@@ -51,6 +54,7 @@ class CarrefourParser : TicketParser {
                     items.add(
                         ItemTicket(
                             nombre = nombreEncontrado,
+                            ticket_id = 0,
                             cantidad = cantidad,
                             precioUnitario = precioUni,
                             total = cantidad * precioUni
@@ -60,7 +64,12 @@ class CarrefourParser : TicketParser {
                 }
             }
         }
-        return items
+        return TicketParseado(
+            fecha = fecha,
+            local = establecimiento,
+            archivo= "",
+            items = items
+        )
     }
 
 
@@ -99,5 +108,36 @@ class CarrefourParser : TicketParser {
         // Un nombre real suele tener al menos 5 letras y pocas cifras numéricas
         // (A diferencia de "18/08/2021" o "86041647...")
         return letras > 4 && letras > numeros && u.length > 4
+    }
+
+    fun obtenerEstablecimiento(lineas: List<String>): String? {
+        for (i in 0 until minOf(10, lineas.size)) {
+            val l = lineas[i].trim()
+
+            // en caso de agregar mas locales agregarlos aca
+            if (l.contains("CARREFOUR", ignoreCase = true)) {
+                return l
+            }
+
+            val letras = l.count { it.isLetter() }
+            val numeros = l.count { it.isDigit() }
+
+            if (letras > 5 && numeros == 0) {
+                return l
+            }
+        }
+        return null
+    }
+
+    fun obtenerFecha(lineas: List<String>): String? {
+        val regexFecha = Regex("""\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b""")
+
+        for (l in lineas) {
+            val match = regexFecha.find(l)
+            if (match != null) {
+                return match.value
+            }
+        }
+        return null
     }
 }

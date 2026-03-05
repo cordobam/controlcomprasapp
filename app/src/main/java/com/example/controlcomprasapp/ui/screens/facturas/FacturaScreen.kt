@@ -157,6 +157,10 @@ fun FacturaScreen(
             }
         }
 
+        Text(text = "Local: ${viewModel.local}")
+        Text(text = "Fecha: ${viewModel.fecha ?: "No detectada"}")
+        Text(text = "Archivo: ${viewModel.archivo}")
+
         // 🔹 LISTA ABAJO
         LazyColumn(
             modifier = Modifier

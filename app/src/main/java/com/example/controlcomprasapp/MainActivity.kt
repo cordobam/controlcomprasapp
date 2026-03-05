@@ -3,6 +3,8 @@ package com.example.controlcomprasapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.controlcomprasapp.data.local.datasource.ArchivoDataSource
+import com.example.controlcomprasapp.data.local.datasource.LocalDataSource
 import com.example.controlcomprasapp.ui.theme.ControlcomprasappTheme
 import com.example.controlcomprasapp.data.local.datasource.TicketLocalDataSource
 import com.example.controlcomprasapp.data.parser.CarrefourParser
@@ -19,7 +21,9 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val dataSource = TicketLocalDataSource(this)
-            val repo = TicketRepository(dataSource)
+            val localDataSource = LocalDataSource(this)
+            val archivoDataSource = ArchivoDataSource(this)
+            val repo = TicketRepository(dataSource, localDataSource, archivoDataSource)
 
             val parseManager = ParserManager(listOf(CarrefourParser()))
 
