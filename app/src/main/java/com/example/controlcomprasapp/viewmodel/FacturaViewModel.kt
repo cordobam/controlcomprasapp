@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.controlcomprasapp.data.parser.CarrefourParser
+import com.example.controlcomprasapp.domain.model.Descuentos
 import com.example.controlcomprasapp.domain.parser.ParserManager
 
 class FacturaViewModel(
@@ -27,14 +28,18 @@ class FacturaViewModel(
     var fecha: String? by mutableStateOf("")
     var local by mutableStateOf("")
     var archivo by mutableStateOf("")
-    // agregar nuevo parser en caso de agregar factura de otro lugar
 
+    var descuentos by mutableStateOf<List<Descuentos>>(emptyList())
+
+    // agregar nuevo parser en caso de agregar factura de otro lugar
     fun guardar() {
+
         repo.guardarTicketCompleto(
             fecha = fecha ?: "",
             nombreLocal = local,
             nombreArchivo = archivo,
-            items = items    )
+            items = items,
+            descuentos=descuentos)
     }
     fun procesarUri(context: Context, uri: Uri) {
 
@@ -54,6 +59,7 @@ class FacturaViewModel(
                 local = ticket.local
                 items = ticket.items
                 archivo = nombreArchivo
+                descuentos = ticket.descuentos
 
             } else {
                 items = emptyList()

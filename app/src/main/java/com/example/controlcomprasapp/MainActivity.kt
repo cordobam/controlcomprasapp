@@ -13,6 +13,7 @@ import com.example.controlcomprasapp.domain.parser.ParserManager
 import com.example.controlcomprasapp.ui.navegation.AppNavigation
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
 import com.example.controlcomprasapp.viewmodel.FacturaViewModelFactory
+import com.example.controlcomprasapp.data.local.datasource.DescuentoDataSource
 
 
 class MainActivity : ComponentActivity() {
@@ -23,7 +24,9 @@ class MainActivity : ComponentActivity() {
             val dataSource = TicketLocalDataSource(this)
             val localDataSource = LocalDataSource(this)
             val archivoDataSource = ArchivoDataSource(this)
-            val repo = TicketRepository(dataSource, localDataSource, archivoDataSource)
+            val descuentosDataSource = DescuentoDataSource(this)
+
+            val repo = TicketRepository(dataSource, localDataSource, archivoDataSource, descuentosDataSource )
 
             val parseManager = ParserManager(listOf(CarrefourParser()))
 
