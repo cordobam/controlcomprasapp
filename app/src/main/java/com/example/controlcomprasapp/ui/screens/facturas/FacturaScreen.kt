@@ -50,6 +50,8 @@ fun FacturaScreen(
 
     val items = viewModel.items   // ← viene del ViewModel
 
+    val descuentos = viewModel.descuentos
+
     val cameraLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             // nada extra
@@ -162,6 +164,7 @@ fun FacturaScreen(
         Text(text = "Archivo: ${viewModel.archivo}")
 
         // 🔹 LISTA ABAJO
+        Text(text = "Items:")
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -172,6 +175,24 @@ fun FacturaScreen(
                     Text(item.nombre, fontWeight = FontWeight.Bold)
                     Text(
                         "Cant: ${item.cantidad} | Unit: ${item.precioUnitario} | Total: ${item.total}"
+                    )
+                    HorizontalDivider()
+                }
+            }
+        }
+
+        // 🔹 LISTA ABAJO
+        Text(text = "Descuentos:")
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            items(descuentos) { item ->
+                Column(Modifier.padding(8.dp)) {
+                    Text(item.nombre, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Cant: ${item.total}"
                     )
                     HorizontalDivider()
                 }

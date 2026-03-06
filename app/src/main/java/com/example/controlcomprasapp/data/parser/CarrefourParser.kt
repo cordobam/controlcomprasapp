@@ -2,6 +2,7 @@ package com.example.controlcomprasapp.data.parser
 
 import android.util.Log
 import com.example.controlcomprasapp.data.local.dto.TicketParseado
+import com.example.controlcomprasapp.domain.model.Descuentos
 import com.example.controlcomprasapp.domain.model.ItemTicket
 import com.example.controlcomprasapp.domain.parser.TicketParser
 
@@ -16,14 +17,41 @@ class CarrefourParser : TicketParser {
 
     override fun parser(lineas: List<String>): TicketParseado  {
         val items = mutableListOf<ItemTicket>()
+        val descuentos = mutableListOf<Descuentos>()
         val establecimiento = "Carrefour"
         val fecha = obtenerFecha(lineas)
 
         // Regex para detectar cantidad x precio (ej: 1 x 4889,00)
         val regexPrecio = Regex("""(\d+)\s*[xX]\s*([\d,.]+)""")
+        val regexDescuento = Regex("""MC\s+(.+?)\s+(-?\d+[.,]\d+)""")
+        Log.d("LINEAS_OK", "MATCH: $lineas")
 
         for (i in lineas.indices) {
-            val limpia = lineas[i].trim()
+            val limpia = lineas[i]
+                .replace('\u00A0', ' ')
+                .replace('­', '-')
+                .trim()
+            val matchDesc = regexDescuento.find(limpia)
+
+
+            if (matchDesc != null) {
+
+                val nombreDesc = matchDesc.groupValues[1].trim()
+                val totalDesc = matchDesc.groupValues[2].replace(",", ".").toDoubleOrNull() ?: 0.0
+
+                descuentos.add(
+                    Descuentos(
+                        id = 0,
+                        ticket_id = 0,
+                        nombre = nombreDesc,
+                        total = totalDesc,
+                        id_archivo = 0
+                    )
+                )
+
+                continue
+            }
+
             val matchPrecio = regexPrecio.find(limpia)
 
             if (matchPrecio != null) {
@@ -60,15 +88,16 @@ class CarrefourParser : TicketParser {
                             total = cantidad * precioUni
                         )
                     )
-                    Log.d("PARSE_OK", "Producto: $nombreEncontrado - Precio: $precioUni")
                 }
             }
         }
+
         return TicketParseado(
             fecha = fecha,
             local = establecimiento,
             archivo= "",
-            items = items
+            items = items,
+            descuentos = descuentos
         )
     }
 
@@ -110,32 +139,20 @@ class CarrefourParser : TicketParser {
         return letras > 4 && letras > numeros && u.length > 4
     }
 
-    fun obtenerEstablecimiento(lineas: List<String>): String? {
-        for (i in 0 until minOf(10, lineas.size)) {
-            val l = lineas[i].trim()
-
-            // en caso de agregar mas locales agregarlos aca
-            if (l.contains("CARREFOUR", ignoreCase = true)) {
-                return l
-            }
-
-            val letras = l.count { it.isLetter() }
-            val numeros = l.count { it.isDigit() }
-
-            if (letras > 5 && numeros == 0) {
-                return l
-            }
-        }
-        return null
-    }
 
     fun obtenerFecha(lineas: List<String>): String? {
         val regexFecha = Regex("""\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b""")
 
-        for (l in lineas) {
-            val match = regexFecha.find(l)
-            if (match != null) {
-                return match.value
+        for (i in lineas.indices) {
+            val l = lineas[i].uppercase()
+
+            if (l.contains("FECHA")) {
+                val match = regexFecha.find(l)
+                if (match != null) return match.value
+
+                val siguiente = lineas.getOrNull(i + 1)
+                val match2 = siguiente?.let { regexFecha.find(it) }
+                if (match2 != null) return match2.value
             }
         }
         return null
