@@ -24,7 +24,7 @@ class CarrefourParser : TicketParser {
         // Regex para detectar cantidad x precio (ej: 1 x 4889,00)
         val regexPrecio = Regex("""(\d+)\s*[xX]\s*([\d,.]+)""")
         val regexDescuento = Regex("""MC\s+(.+?)\s+(-?\d+[.,]\d+)""")
-        Log.d("LINEAS_OK", "MATCH: $lineas")
+
 
         for (i in lineas.indices) {
             val limpia = lineas[i]

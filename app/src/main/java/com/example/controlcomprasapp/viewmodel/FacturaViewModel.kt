@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,15 +33,16 @@ class FacturaViewModel(
     var descuentos by mutableStateOf<List<Descuentos>>(emptyList())
 
     // agregar nuevo parser en caso de agregar factura de otro lugar
-    fun guardar() {
+    fun guardar() : Boolean{
 
-        repo.guardarTicketCompleto(
+        return repo.guardarTicketCompleto(
             fecha = fecha ?: "",
             nombreLocal = local,
             nombreArchivo = archivo,
             items = items,
             descuentos=descuentos)
     }
+
     fun procesarUri(context: Context, uri: Uri) {
 
         val nombreArchivo = obtenerNombreArchivo(context, uri)

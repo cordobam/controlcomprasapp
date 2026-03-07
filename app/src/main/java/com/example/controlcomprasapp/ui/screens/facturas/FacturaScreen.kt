@@ -3,6 +3,7 @@ package com.example.controlcomprasapp.ui.screens.facturas
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -150,7 +151,10 @@ fun FacturaScreen(
 
                 Button(
                     onClick = {
-                        viewModel.guardar()
+                        val guardado = viewModel.guardar()
+                        if (!guardado) {
+                            Toast.makeText(context, "Este ticket ya fue cargado", Toast.LENGTH_LONG).show()
+                        }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
