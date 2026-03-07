@@ -22,9 +22,16 @@ class TicketRepository(
         nombreArchivo: String,
         items: List<ItemTicket>,
         descuentos: List<Descuentos>
-    ) {
-        Log.d("GUARDAR_OK", "MATCH: $descuentos")
-        val archivoId = archivoDataSource.insertOrGet(nombreArchivo)
+    ): Boolean{
+
+        val archivoResult  = archivoDataSource.insertOrGet(nombreArchivo)
+
+        if (!archivoResult .inserted) {
+            Log.d("TICKET_DUPLICADO", "El ticket ya fue cargado")
+            return false
+        }
+
+        val archivoId = archivoResult.id
 
         val localId = localDataSource.insertOrGet(nombreLocal)
 
@@ -40,6 +47,8 @@ class TicketRepository(
         Log.d("GUARDAR_OK_1", "MATCH: $descuentos $ticketId $archivoId")
         local.guardarItems(items, ticketId)
         descuentosDataSource.guardarDescuentos(descuentos, ticketId , archivoId)
+
+        return true
     }
 
 

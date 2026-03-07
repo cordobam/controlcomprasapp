@@ -6,7 +6,8 @@ import android.database.sqlite.SQLiteDatabase
 import com.example.controlcomprasapp.data.local.db.DbHelper
 class ArchivoDataSource(context: Context) {
     private val dbHelper = DbHelper(context)
-    fun insertOrGet(nombre: String): Long {
+    fun insertOrGet(nombre: String): InsertResult {
+
         val db = dbHelper.writableDatabase
 
         val values = ContentValues().apply {
@@ -21,7 +22,7 @@ class ArchivoDataSource(context: Context) {
         )
 
         if (insertResult != -1L) {
-            return insertResult
+            return InsertResult(insertResult, true)
         }
 
         val cursor = db.rawQuery(
@@ -32,10 +33,10 @@ class ArchivoDataSource(context: Context) {
         return if (cursor.moveToFirst()) {
             val id = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
             cursor.close()
-            id
+            InsertResult(id, false)
         } else {
             cursor.close()
-            -1L
+            InsertResult(-1, false)
         }
     }
 }
