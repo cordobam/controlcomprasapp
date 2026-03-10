@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.controlcomprasapp.data.local.datasource.ArchivoDataSource
 import com.example.controlcomprasapp.data.local.datasource.DescuentoDataSource
 import com.example.controlcomprasapp.data.local.datasource.LocalDataSource
+import com.example.controlcomprasapp.data.local.datasource.ProductFilter
 import com.example.controlcomprasapp.data.local.datasource.TicketLocalDataSource
 import com.example.controlcomprasapp.domain.model.Descuentos
 import com.example.controlcomprasapp.domain.model.ItemTicket
@@ -56,7 +57,7 @@ class TicketRepository(
     //    local.guardarItems(items)
     //}
 
-    fun listarTickets(): List<ItemTicket> {
-        return local.obtenerItems()
+    fun listarTickets(filter: ProductFilter): List<ItemTicket> {
+        return local.obtenerItems(filter)
    }
 }

@@ -1,10 +1,14 @@
 package com.example.controlcomprasapp.data.parser
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.controlcomprasapp.data.local.dto.TicketParseado
 import com.example.controlcomprasapp.domain.model.Descuentos
 import com.example.controlcomprasapp.domain.model.ItemTicket
 import com.example.controlcomprasapp.domain.parser.TicketParser
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class CarrefourParser : TicketParser {
     override fun puedeParsear(texto: String): Boolean {
@@ -15,6 +19,7 @@ class CarrefourParser : TicketParser {
         return resultado
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun parser(lineas: List<String>): TicketParseado  {
         val items = mutableListOf<ItemTicket>()
         val descuentos = mutableListOf<Descuentos>()
@@ -140,21 +145,41 @@ class CarrefourParser : TicketParser {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun obtenerFecha(lineas: List<String>): String? {
+
         val regexFecha = Regex("""\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b""")
+
+        val formatterEntradaCorto = DateTimeFormatter.ofPattern("d/M/yy")
+        val formatterEntradaLargo = DateTimeFormatter.ofPattern("d/M/yyyy")
+        val formatterSalida = DateTimeFormatter.ISO_LOCAL_DATE // yyyy-MM-dd
+
+        fun convertirFecha(fecha: String): String? {
+            return try {
+                val date = try {
+                    LocalDate.parse(fecha, formatterEntradaCorto)
+                } catch (e: Exception) {
+                    LocalDate.parse(fecha, formatterEntradaLargo)
+                }
+                date.format(formatterSalida)
+            } catch (e: Exception) {
+                null
+            }
+        }
 
         for (i in lineas.indices) {
             val l = lineas[i].uppercase()
 
             if (l.contains("FECHA")) {
                 val match = regexFecha.find(l)
-                if (match != null) return match.value
+                if (match != null) return convertirFecha(match.value)
 
                 val siguiente = lineas.getOrNull(i + 1)
                 val match2 = siguiente?.let { regexFecha.find(it) }
-                if (match2 != null) return match2.value
+                if (match2 != null) return convertirFecha(match2.value)
             }
         }
+
         return null
     }
 }
