@@ -38,20 +38,38 @@ class TicketLocalDataSource(context: Context) {
         }
     }
 
-    fun obtenerItems(): List<ItemTicket> {
+    fun obtenerItems(filter: ProductFilter): List<ItemTicket> {
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM ticket_item", null)
+        var query = """SELECT ti.* FROM ticket_item ti JOIN ticket t ON t.id = ti.ticket_id WHERE 1=1""".trimIndent()
 
+        val args = mutableListOf<String>()
+        //
+        filter.fechaDesde?.let {
+            query += " AND t.fecha >= ?"
+            args.add(it)
+        }
+
+        filter.fechaHasta?.let {
+            query += " AND t.fecha <= ?"
+            args.add(it)
+        }
+
+        filter.localId?.let {
+            query += " AND t.id_local = ?"
+            args.add(it.toString())
+        }
+
+        val cursor = db.rawQuery(query, args.toTypedArray())
         val lista = mutableListOf<ItemTicket>()
 
         while (cursor.moveToNext()) {
             lista.add(
                 ItemTicket(
-                    nombre = cursor.getString(1),
-                    ticket_id = cursor.getInt(2),
-                    cantidad = cursor.getInt(3),
-                    precioUnitario = cursor.getDouble(4),
-                    total = cursor.getDouble(5)
+                    ticket_id = cursor.getInt(cursor.getColumnIndexOrThrow("ticket_id")),
+                    nombre = cursor.getString(cursor.getColumnIndexOrThrow("nombre")),
+                    cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("cantidad")),
+                    precioUnitario = cursor.getDouble(cursor.getColumnIndexOrThrow("precio")),
+                    total = cursor.getDouble(cursor.getColumnIndexOrThrow("total"))
                 )
             )
         }

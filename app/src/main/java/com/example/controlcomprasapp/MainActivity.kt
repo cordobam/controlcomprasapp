@@ -14,6 +14,8 @@ import com.example.controlcomprasapp.ui.navegation.AppNavigation
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
 import com.example.controlcomprasapp.viewmodel.FacturaViewModelFactory
 import com.example.controlcomprasapp.data.local.datasource.DescuentoDataSource
+import com.example.controlcomprasapp.data.repository.ProductRepository
+import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
 
 
 class MainActivity : ComponentActivity() {
@@ -32,8 +34,11 @@ class MainActivity : ComponentActivity() {
 
             val factory = FacturaViewModelFactory(repo, parseManager)
 
+            val productRepository = ProductRepository(dataSource)
+            val productFactory = ProductViewModelFactory(productRepository)
+
             ControlcomprasappTheme {
-                AppNavigation(factory = factory)
+                AppNavigation(factory = factory,productFactory = productFactory)
             }
         }
     }
