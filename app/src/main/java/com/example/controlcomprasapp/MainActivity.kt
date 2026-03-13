@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
             val factory = FacturaViewModelFactory(repo, parseManager)
 
-            val productRepository = ProductRepository(dataSource)
+            val productRepository = ProductRepository(dataSource , descuentosDataSource)
             val productFactory = ProductViewModelFactory(productRepository)
 
             ControlcomprasappTheme {
