@@ -9,81 +9,115 @@ import com.example.controlcomprasapp.domain.model.ItemTicket
 import com.example.controlcomprasapp.domain.parser.TicketParser
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.toString
 
 class CarrefourParser : TicketParser {
     override fun puedeParsear(texto: String): Boolean {
+        return texto.contains("Carrefour", ignoreCase = true)
 
-        val resultado = texto.contains("Carrefour", ignoreCase = true)
-        //return texto.contains("Carrefour", ignoreCase = true)
-
-        return resultado
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun parser(lineas: List<String>): TicketParseado  {
+    override fun parser(lineas: List<String>): TicketParseado {
+
         val items = mutableListOf<ItemTicket>()
         val descuentos = mutableListOf<Descuentos>()
+
         val establecimiento = "Carrefour"
         val fecha = obtenerFecha(lineas)
 
-        // Regex para detectar cantidad x precio (ej: 1 x 4889,00)
         val regexPrecio = Regex("""(\d+)\s*[xX]\s*([\d,.]+)""")
-        val regexDescuento = Regex("""MC\s+(.+?)\s+(-?\d+[.,]\d+)""")
+        val regexDescuento = Regex("""(.+?)\s+(-\d+[.,]\d+)""")
 
+        var dentroSeccionDescuentos = false
 
         for (i in lineas.indices) {
+
             val limpia = lineas[i]
                 .replace('\u00A0', ' ')
                 .replace('­', '-')
                 .trim()
-            val matchDesc = regexDescuento.find(limpia)
 
+            val u = limpia.uppercase()
 
-            if (matchDesc != null) {
+            // =========================
+            // DETECTAR SECCION DESCUENTOS
+            // =========================
 
-                val nombreDesc = matchDesc.groupValues[1].trim()
-                val totalDesc = matchDesc.groupValues[2].replace(",", ".").toDoubleOrNull() ?: 0.0
+            if (u == "DESCUENTOS") {
+                dentroSeccionDescuentos = true
+                continue
+            }
 
-                descuentos.add(
-                    Descuentos(
-                        id = 0,
-                        ticket_id = 0,
-                        nombre = nombreDesc,
-                        total = totalDesc,
-                        id_archivo = 0
+            if (dentroSeccionDescuentos) {
+
+                if (u.contains("AHORRO") || u.contains("TOTAL")) {
+                    dentroSeccionDescuentos = false
+                    continue
+                }
+
+                val matchDesc = regexDescuento.find(limpia)
+
+                if (matchDesc != null) {
+
+                    val nombre = matchDesc.groupValues[1].trim()
+
+                    val total = matchDesc.groupValues[2]
+                        .replace(",", ".")
+                        .toDoubleOrNull() ?: 0.0
+
+                    descuentos.add(
+                        Descuentos(
+                            id = 0,
+                            ticket_id = 0,
+                            nombre = nombre,
+                            total = total,
+                            id_archivo = 0
+                        )
                     )
-                )
+                }
 
                 continue
             }
 
+            // =========================
+            // ITEMS
+            // =========================
+
             val matchPrecio = regexPrecio.find(limpia)
 
             if (matchPrecio != null) {
-                val cantidad = matchPrecio.groupValues[1].toIntOrNull() ?: 1
-                val precioUni = matchPrecio.groupValues[2].replace(",", ".").toDoubleOrNull() ?: 0.0
 
-                // --- ESTRATEGIA PARA EL NOMBRE ---
+                val cantidad = matchPrecio.groupValues[1].toIntOrNull() ?: 1
+                val precioUni = matchPrecio.groupValues[2]
+                    .replace(",", ".")
+                    .toDoubleOrNull() ?: 0.0
+
                 var nombreEncontrado: String? = null
 
-                // 1. ¿El nombre está en la misma línea antes del precio?
-                // Ejemplo: "MILA CON PROVENZAL 1 x 4889,00" -> tomamos "MILA CON PROVENZAL"
-                val parteAntesDelPrecio = limpia.substring(0, matchPrecio.range.first).trim()
-                if (esNombrePotencial(parteAntesDelPrecio)) {
-                    nombreEncontrado = parteAntesDelPrecio
+                val parteAntesPrecio = limpia
+                    .substring(0, matchPrecio.range.first)
+                    .trim()
+
+                if (esNombrePotencial(parteAntesPrecio)) {
+                    nombreEncontrado = parteAntesPrecio
                 }
 
-
-                // 2. Si no estaba en la misma línea, buscar SOLO en la línea anterior
                 if (nombreEncontrado == null) {
-                    val lineaAnterior = lineas.getOrNull(i - 1)?.trim()
-                    if (lineaAnterior != null && esNombrePotencial(lineaAnterior)) {
+
+                    val lineaAnterior = lineas
+                        .getOrNull(i - 1)
+                        ?.trim()
+
+                    if (lineaAnterior != null &&
+                        esNombrePotencial(lineaAnterior)
+                    ) {
                         nombreEncontrado = lineaAnterior
                     }
                 }
 
-                // 3. Si encontramos todo, guardamos el item
                 if (nombreEncontrado != null && precioUni > 0.0) {
+
                     items.add(
                         ItemTicket(
                             nombre = nombreEncontrado,
@@ -100,7 +134,7 @@ class CarrefourParser : TicketParser {
         return TicketParseado(
             fecha = fecha,
             local = establecimiento,
-            archivo= "",
+            archivo = "",
             items = items,
             descuentos = descuentos
         )
@@ -129,10 +163,11 @@ class CarrefourParser : TicketParser {
         if (u.startsWith("MC ")) return false // Descuentos "Mi Carrefour"
         if (u.contains("---")) return false // Líneas separadoras
         if (u.contains("BOLSAS NEGRAS")) return false
+        if (u.contains("BOLSAS VERDES")) return false
         if (u.matches(Regex(""".*\d{10,}.*"""))) return false // Códigos de barras (EAN13)
         if (u == "BEBIDAS") return false
         if (u == "CARNICERIA") return false
-        if (u == "ALMACEN") return false
+        //if (u == "ALMACEN") return false
         if (u == "OTROS") return false
 
         // 3. Validaciones de contenido
