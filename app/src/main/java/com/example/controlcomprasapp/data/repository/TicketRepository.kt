@@ -45,7 +45,7 @@ class TicketRepository(
         )
 
 
-        Log.d("GUARDAR_OK_1", "MATCH: $descuentos $ticketId $archivoId")
+
         local.guardarItems(items, ticketId)
         descuentosDataSource.guardarDescuentos(descuentos, ticketId , archivoId)
 

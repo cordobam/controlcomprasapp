@@ -26,6 +26,7 @@ class DbHelper(context: Context) :
                 cantidad INTEGER,
                 precio REAL,
                 total REAL,
+                seccion TEXT,
                 FOREIGN KEY(ticket_id) REFERENCES ticket(id)
             )""".trimIndent()
 

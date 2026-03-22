@@ -33,6 +33,7 @@ class TicketLocalDataSource(context: Context) {
                 put("cantidad", item.cantidad)
                 put("precio", item.precioUnitario)
                 put("total", item.total)
+                put("seccion", item.seccion)
             }
             db.insert("ticket_item", null, values)
         }
@@ -69,7 +70,8 @@ class TicketLocalDataSource(context: Context) {
                     nombre = cursor.getString(cursor.getColumnIndexOrThrow("nombre")),
                     cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("cantidad")),
                     precioUnitario = cursor.getDouble(cursor.getColumnIndexOrThrow("precio")),
-                    total = cursor.getDouble(cursor.getColumnIndexOrThrow("total"))
+                    total = cursor.getDouble(cursor.getColumnIndexOrThrow("total")),
+                    seccion = cursor.getString(cursor.getColumnIndexOrThrow("seccion"))
                 )
             )
         }

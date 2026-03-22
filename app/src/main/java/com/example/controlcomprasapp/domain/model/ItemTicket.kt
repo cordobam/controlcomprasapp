@@ -5,5 +5,6 @@ data class ItemTicket(
     val ticket_id: Int,
     val cantidad: Int,
     val precioUnitario: Double,
-    val total: Double
+    val total: Double,
+    val seccion: String
 )

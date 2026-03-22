@@ -13,7 +13,11 @@ import kotlin.toString
 
 class CarrefourParser : TicketParser {
     override fun puedeParsear(texto: String): Boolean {
-        return texto.contains("Carrefour", ignoreCase = true)
+        val limpio = normalizarTexto(texto)
+
+        Log.d("puedeParsear", limpio)
+
+        return limpio.contains("INC SA")
 
     }
 
@@ -30,6 +34,7 @@ class CarrefourParser : TicketParser {
         val regexDescuento = Regex("""(.+?)\s+(-\d+[.,]\d+)""")
 
         var dentroSeccionDescuentos = false
+        var seccionActual = "General"
 
         for (i in lineas.indices) {
 
@@ -83,7 +88,10 @@ class CarrefourParser : TicketParser {
             // =========================
             // ITEMS
             // =========================
-
+            if (esSeccion(limpia)) {
+                seccionActual = limpia
+                continue
+            }
             val matchPrecio = regexPrecio.find(limpia)
 
             if (matchPrecio != null) {
@@ -124,7 +132,8 @@ class CarrefourParser : TicketParser {
                             ticket_id = 0,
                             cantidad = cantidad,
                             precioUnitario = precioUni,
-                            total = cantidad * precioUni
+                            total = cantidad * precioUni,
+                            seccion = seccionActual
                         )
                     )
                 }
@@ -167,7 +176,7 @@ class CarrefourParser : TicketParser {
         if (u.matches(Regex(""".*\d{10,}.*"""))) return false // Códigos de barras (EAN13)
         if (u == "BEBIDAS") return false
         if (u == "CARNICERIA") return false
-        //if (u == "ALMACEN") return false
+        if (u == "ALMACEN") return false
         if (u == "OTROS") return false
 
         // 3. Validaciones de contenido
@@ -216,5 +225,31 @@ class CarrefourParser : TicketParser {
         }
 
         return null
+    }
+
+    fun esSeccion(linea: String): Boolean {
+
+        val secciones = listOf(
+            "ALMACEN",
+            "BEBIDAS",
+            "CARNICERIA",
+            "PANADERIA",
+            "VERDURAS",
+            "FRUTAS",
+            "LIMPIEZA",
+            "PERFUMERIA",
+            "OTROS"
+        )
+
+        return secciones.contains(linea.uppercase().trim())
+    }
+
+    fun normalizarTexto(texto: String): String {
+        return texto
+            .replace('\u00A0', ' ')   // espacios raros → espacio normal
+            .replace('­', '-')        // guiones raros → guion normal
+            .replace(Regex("\\s+"), " ") // múltiples espacios → uno solo
+            .uppercase()
+            .trim()
     }
 }
