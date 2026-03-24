@@ -2,8 +2,10 @@ package com.example.controlcomprasapp.ui.screens.productos
 
 
 import android.app.DatePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -34,6 +37,9 @@ import com.example.controlcomprasapp.viewmodel.ProductViewModel
 import java.util.Calendar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun ProductosScreen(viewModel: ProductViewModel) {
@@ -53,27 +59,23 @@ fun ProductosScreen(viewModel: ProductViewModel) {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.LightGray.copy(alpha = 0.1f))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        Text("🔎 Filtros", fontWeight = FontWeight.Bold)
 
         DatePickerField(
             label = "Fecha desde",
             value = fechaDesde
-        ) {
-            fechaDesde = it
-        }
-
-        Spacer(Modifier.height(8.dp))
+        ) { fechaDesde = it }
 
         DatePickerField(
             label = "Fecha hasta",
             value = fechaHasta
-        ) {
-            fechaHasta = it
-        }
-
-        Spacer(Modifier.height(8.dp))
+        ) { fechaHasta = it }
 
         LocalDropdown(
             locales = locales,
@@ -82,18 +84,25 @@ fun ProductosScreen(viewModel: ProductViewModel) {
             localSeleccionado = it
         }
 
+
         Spacer(Modifier.height(8.dp))
 
-        Row {
-
-            Button(onClick = { tipoVista = TipoVista.ITEMS }) {
-                Text("Items")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { tipoVista = TipoVista.ITEMS },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("🛒 Items")
             }
 
-            Spacer(Modifier.width(8.dp))
-
-            Button(onClick = { tipoVista = TipoVista.DESCUENTOS }) {
-                Text("Descuentos")
+            Button(
+                onClick = { tipoVista = TipoVista.DESCUENTOS },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("💸 Descuentos")
             }
         }
 
@@ -101,7 +110,6 @@ fun ProductosScreen(viewModel: ProductViewModel) {
 
         Button(
             onClick = {
-
                 val filter = ProductFilter(
                     fechaDesde = fechaDesde,
                     fechaHasta = fechaHasta,
@@ -113,20 +121,30 @@ fun ProductosScreen(viewModel: ProductViewModel) {
                 } else {
                     viewModel.loadDescuentos(filter)
                 }
-
-            }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
             Text("Aplicar filtros")
         }
 
-        Spacer(Modifier.height(16.dp))
-
-        LazyColumn {
-
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(productos) { product ->
 
-                Text("${product.nombre} - ${product.total}")
-
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.1f))
+                        .padding(12.dp)
+                ) {
+                    Text(product.nombre, fontWeight = FontWeight.Bold)
+                    Text("Total: ${product.total}")
+                }
             }
         }
     }
