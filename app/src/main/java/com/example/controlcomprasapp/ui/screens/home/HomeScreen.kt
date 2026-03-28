@@ -1,5 +1,6 @@
 package com.example.controlcomprasapp.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +16,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -30,15 +34,21 @@ fun HomeScreen( factory: HomeViewModelFactory) {
 
     val viewModel: HomeViewModel = viewModel(factory = factory)
     val items = viewModel.items
+    val items_gastos = viewModel.items_gastos
+    val items_mensual = viewModel.items_mensual
+    val items_prductos = viewModel.items_prductos
+
+
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
-        // 🔹 TEXTOS ARRIBA
         Text(
             text = "📊 Resumen del mes",
             fontWeight = FontWeight.Bold,
@@ -50,29 +60,52 @@ fun HomeScreen( factory: HomeViewModelFactory) {
             color = Color.Gray
         )
 
-        // 🔹 CARDS (2x2)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            InfoCard(
-                titulo = "🔥 Top descuentos",
-                modifier = Modifier.weight(1f)
-            ) {
-                items.forEach {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(it.nombre)
-                        Text("$${it.total}")
-                    }
+        InfoCard(titulo = "🔥 Top descuentos") {
+            items.take(5).forEach {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(it.nombre)
+                    Text("$${it.total}")
                 }
             }
-
-            //InfoCard("Ahorro", "$45.000", Modifier.weight(1f))
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            //InfoCard("Ticket prom.", "$12.500", Modifier.weight(1f))
-            //InfoCard("Top producto", "Coca Cola", Modifier.weight(1f))
+        InfoCard(titulo = "🔥 Top Gastos x Rubro") {
+            items_gastos.take(5).forEach {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(it.seccion)
+                    Text("$${it.total}")
+                }
+            }
+        }
+
+        InfoCard(titulo = "🔥 Top Productos") {
+            items_prductos.take(5).forEach {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(it.nombre)
+                    Text("${it.cant_veces}")
+                }
+            }
+        }
+
+        InfoCard(titulo = "🔥 Gasto x Mes") {
+            items_mensual.take(5).forEach {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(it.fecha)
+                    Text("$${it.monto}")
+                }
+            }
         }
     }
 
