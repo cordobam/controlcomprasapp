@@ -14,13 +14,15 @@ import com.example.controlcomprasapp.ui.components.TopBar
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
 import com.example.controlcomprasapp.ui.screens.home.HomeScreen
 import com.example.controlcomprasapp.ui.screens.productos.ProductosScreen
+import com.example.controlcomprasapp.viewmodel.HomeViewModelFactory
 import com.example.controlcomprasapp.viewmodel.ProductViewModel
 import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(factory: FacturaViewModelFactory,
-                  productFactory: ProductViewModelFactory
+                  productFactory: ProductViewModelFactory,
+                  homeFactory: HomeViewModelFactory
 ) {
 
     val navController = rememberNavController()
@@ -38,7 +40,7 @@ fun AppNavigation(factory: FacturaViewModelFactory,
         ) {
 
             composable(Screen.Home.route) {
-                HomeScreen()
+                HomeScreen(factory = homeFactory)
             }
 
             composable(Screen.Facturas.route) {
