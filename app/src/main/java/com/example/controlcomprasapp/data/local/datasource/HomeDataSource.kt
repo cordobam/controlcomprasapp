@@ -35,7 +35,7 @@ class HomeDataSource(context: Context) {
 
     fun obtenerGastoXRubro(): List<ItemTicketDTO>{
         val db = dbHelper.readableDatabase
-        var query = """SELECT t.seccion, sum(t.total) as total  FROM ticket_item t  GROUP BY t.seccion ORDER BY sum(t.total) ASC LIMIT 5 """.trimIndent()
+        var query = """SELECT t.seccion, sum(t.total) as total  FROM ticket_item t  GROUP BY t.seccion ORDER BY sum(t.total) DESC LIMIT 5 """.trimIndent()
 
 
         val cursor = db.rawQuery(query,null)
@@ -56,7 +56,7 @@ class HomeDataSource(context: Context) {
 
     fun obtenerProdcutosMasComprados(): List<ProductoDTO>{
         val db = dbHelper.readableDatabase
-        var query = """SELECT t.nombre, count(t.nombre) as cant_veces  FROM ticket_item t  GROUP BY t.nombre ORDER BY count(t.nombre) ASC LIMIT 5 """.trimIndent()
+        var query = """SELECT t.nombre, count(*) as cant_veces  FROM ticket_item t  GROUP BY t.nombre ORDER BY count(*) ASC LIMIT 5 """.trimIndent()
 
 
         val cursor = db.rawQuery(query,null)
@@ -77,7 +77,7 @@ class HomeDataSource(context: Context) {
 
     fun obtenerGastoXMes(): List<GastoMensualDTO>{
         val db = dbHelper.readableDatabase
-        var query = """SELECT substr(tt.fecha, 1, 7) as mes, sum(t.total) as monto  FROM ticket_item t INNER JOIN ticket tt ON t.ticket_id = tt.id  GROUP BY tt.fecha ORDER BY sum(t.total)ASC LIMIT 5 """.trimIndent()
+        var query = """SELECT substr(tt.fecha, 1, 7) as mes, sum(t.total) as monto  FROM ticket_item t INNER JOIN ticket tt ON t.ticket_id = tt.id  GROUP BY  substr(tt.fecha, 1, 7) ORDER BY sum(t.total) DESC LIMIT 5 """.trimIndent()
 
 
         val cursor = db.rawQuery(query,null)
