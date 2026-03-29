@@ -45,7 +45,9 @@ fun HomeScreen( factory: HomeViewModelFactory) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(16.dp),
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color.LightGray.copy(alpha = 0.1f))
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
@@ -66,7 +68,7 @@ fun HomeScreen( factory: HomeViewModelFactory) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(it.nombre)
+                    Text(it.nombre, fontWeight = FontWeight.Bold)
                     Text("$${it.total}")
                 }
             }
@@ -78,7 +80,7 @@ fun HomeScreen( factory: HomeViewModelFactory) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(it.seccion)
+                    Text(it.seccion, fontWeight = FontWeight.Bold)
                     Text("$${it.total}")
                 }
             }
@@ -90,7 +92,7 @@ fun HomeScreen( factory: HomeViewModelFactory) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(it.nombre)
+                    Text(it.nombre, fontWeight = FontWeight.Bold)
                     Text("${it.cant_veces}")
                 }
             }
@@ -102,7 +104,7 @@ fun HomeScreen( factory: HomeViewModelFactory) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(it.fecha)
+                    Text(it.fecha, fontWeight = FontWeight.Bold)
                     Text("$${it.monto}")
                 }
             }
@@ -121,7 +123,7 @@ fun InfoCard(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .background(Color.LightGray.copy(alpha = 0.1f))
             .padding(16.dp)
     ) {
         Text(titulo, fontWeight = FontWeight.Bold)
