@@ -3,6 +3,7 @@ package com.example.controlcomprasapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.controlcomprasapp.data.local.datasource.ArchivoDataSource
 import com.example.controlcomprasapp.data.local.datasource.LocalDataSource
 import com.example.controlcomprasapp.ui.theme.ControlcomprasappTheme
@@ -23,6 +24,7 @@ import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         setContent {
 

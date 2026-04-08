@@ -25,7 +25,7 @@ fun TopBar(navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
-        title = { Text("WaterDrop App") },
+        title = { Text("Control Compras App") },
         actions = {
 
             IconButton(onClick = { expanded = true }) {

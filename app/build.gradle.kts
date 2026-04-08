@@ -64,6 +64,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.foundation)
+    implementation(libs.androidx.ui.text)
+    implementation(libs.ui)
+    implementation(libs.androidx.foundation.layout)
+    implementation(libs.engage.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,4 +79,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation("androidx.compose.material:material-icons-extended")
+
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.google.android.material:material:1.11.0")
 }
