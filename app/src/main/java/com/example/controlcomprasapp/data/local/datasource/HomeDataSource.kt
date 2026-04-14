@@ -1,6 +1,8 @@
 package com.example.controlcomprasapp.data.local.datasource
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.controlcomprasapp.data.local.db.DbHelper
 import com.example.controlcomprasapp.data.local.dto.DescuentosDTO
 import com.example.controlcomprasapp.data.local.dto.GastoMensualDTO
@@ -11,12 +13,11 @@ import com.example.controlcomprasapp.domain.model.Descuentos
 class HomeDataSource(context: Context) {
     private val dbHelper = DbHelper(context)
 
-    fun obtenerDescuentosMax(): List<DescuentosDTO> {
+    fun obtenerDescuentosMax(mes: String, anio: String): List<DescuentosDTO> {
         val db = dbHelper.readableDatabase
-        var query = """SELECT d.nombre, t.fecha , max(d.total) as total_maximo FROM descuentos d INNER JOIN ticket t ON t.id = d.ticket_id GROUP BY d.nombre,t.fecha ORDER BY total ASC LIMIT 5 """.trimIndent()
+        var query = """SELECT d.nombre, t.fecha , max(d.total) as total_maximo FROM descuentos d INNER JOIN  ticket t ON t.id = d.ticket_id  WHERE strftime('%m', t.fecha) = ? AND strftime('%Y', t.fecha) = ? GROUP BY d.nombre,t.fecha ORDER BY total ASC LIMIT 5 """.trimIndent()
 
-
-        val cursor = db.rawQuery(query,null)
+        val cursor = db.rawQuery(query,arrayOf(mes, anio))
         val lista = mutableListOf<DescuentosDTO>()
 
         while (cursor.moveToNext()) {
@@ -33,12 +34,11 @@ class HomeDataSource(context: Context) {
         return lista
     }
 
-    fun obtenerGastoXRubro(): List<ItemTicketDTO>{
+    fun obtenerGastoXRubro(mes: String, anio: String): List<ItemTicketDTO>{
         val db = dbHelper.readableDatabase
-        var query = """SELECT t.seccion, sum(t.total) as total  FROM ticket_item t  GROUP BY t.seccion ORDER BY sum(t.total) DESC LIMIT 5 """.trimIndent()
+        var query = """SELECT ti.seccion, SUM(ti.total) as total  FROM ticket_item ti INNER JOIN ticket t ON t.id = ti.ticket_id WHERE strftime('%m', t.fecha) = ? AND strftime('%Y', t.fecha) = ? GROUP BY ti.seccion ORDER BY total DESC LIMIT 5""".trimIndent()
 
-
-        val cursor = db.rawQuery(query,null)
+        val cursor = db.rawQuery(query,arrayOf(mes, anio))
         val lista = mutableListOf<ItemTicketDTO>()
 
         while (cursor.moveToNext()) {
@@ -54,12 +54,12 @@ class HomeDataSource(context: Context) {
         return lista
     }
 
-    fun obtenerProdcutosMasComprados(): List<ProductoDTO>{
+    fun obtenerProdcutosMasComprados(mes: String, anio: String): List<ProductoDTO>{
         val db = dbHelper.readableDatabase
-        var query = """SELECT t.nombre, count(*) as cant_veces  FROM ticket_item t  GROUP BY t.nombre ORDER BY count(*) ASC LIMIT 5 """.trimIndent()
+        var query = """SELECT ti.nombre, COUNT(*) as cant_veces  FROM ticket_item ti INNER JOIN ticket t ON t.id = ti.ticket_id WHERE strftime('%m', t.fecha) = ? AND strftime('%Y', t.fecha) = ? GROUP BY ti.nombre ORDER BY cant_veces DESC LIMIT 5 """.trimIndent()
 
 
-        val cursor = db.rawQuery(query,null)
+        val cursor = db.rawQuery(query,arrayOf(mes, anio))
         val lista = mutableListOf<ProductoDTO>()
 
         while (cursor.moveToNext()) {
@@ -94,6 +94,25 @@ class HomeDataSource(context: Context) {
 
         cursor.close()
         return lista
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun generarMeses(cantidad: Int = 3): List<MesFiltro> {
+        val hoy = java.time.LocalDate.now()
+
+        return (0 until cantidad).map { i ->
+            val fecha = hoy.minusMonths(i.toLong())
+
+            val nombreMes = fecha.month.name
+                .lowercase()
+                .replaceFirstChar { it.uppercase() }
+
+            MesFiltro(
+                mes = fecha.monthValue,
+                anio = fecha.year,
+                label = "$nombreMes ${fecha.year}"
+            )
+        }
     }
 
 }
