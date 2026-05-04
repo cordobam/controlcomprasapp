@@ -91,4 +91,44 @@ class FacturaViewModel(
 
         return nombre
     }
+
+    fun agregarItem(nombre: String, cantidad: Int, precioUnitario: Double, seccion: String = "") {
+        val nuevoItem = ItemTicket(
+            nombre = nombre,
+            ticket_id = 0,           // temporal, el repo asigna el real al guardar
+            cantidad = cantidad,
+            precioUnitario = precioUnitario,
+            total = precioUnitario * cantidad,
+            seccion = seccion
+        )
+        items = items + nuevoItem
+    }
+
+    fun eliminarItem(item: ItemTicket) {
+        items = items - item
+    }
+
+    fun agregarDescuento(nombre: String, total: Double) {
+        val nuevoDescuento = Descuentos(
+            id = 0,                  // temporal
+            ticket_id = 0,           // temporal
+            nombre = nombre,
+            total = total,
+            id_archivo = 0           // temporal
+        )
+        descuentos = descuentos + nuevoDescuento
+    }
+
+    fun eliminarDescuento(descuento: Descuentos) {
+        descuentos = descuentos - descuento
+    }
+
+    fun limpiar() {
+        items = emptyList()
+        descuentos = emptyList()
+        fecha = null
+        local = ""
+        archivo = ""
+    }
+
 }

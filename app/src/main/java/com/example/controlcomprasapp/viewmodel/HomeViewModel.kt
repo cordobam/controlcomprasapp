@@ -26,23 +26,6 @@ class HomeViewModel(private val repository: HomeRepository): ViewModel() {
     var items_mes by mutableStateOf<List<MesFiltro>>(emptyList())
         private set
 
-
-    /*fun loadDescuentosMax(){
-        items = repository.obtenerDescuentos()
-    }
-
-    fun loadGastoXRubro(){
-        items_gastos = repository.obtenerGastoXRubro()
-    }
-
-    fun loadProdMasComprados(){
-        items_prductos = repository.obtenerProdcutosMasComprados()
-    }
-
-    fun loadGastosMensuales(){
-        items_mensual = repository.obtenerGastoXMes()
-    }*/
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun loadMeses(){
         items_mes = repository.obtenerMeses()
