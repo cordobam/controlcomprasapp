@@ -1,5 +1,7 @@
 package com.example.controlcomprasapp.ui.navegation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -20,7 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.controlcomprasapp.viewmodel.FacturaViewModelFactory
 import com.example.controlcomprasapp.ui.components.TopBar
+import com.example.controlcomprasapp.ui.screens.facturas.FacturaManualScreen
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
+import com.example.controlcomprasapp.ui.screens.facturas.NuevaFacturaScreen
 import com.example.controlcomprasapp.ui.screens.home.HomeScreen
 import com.example.controlcomprasapp.ui.screens.home.SurfaceDark
 import com.example.controlcomprasapp.ui.screens.productos.ProductosScreen
@@ -28,6 +32,7 @@ import com.example.controlcomprasapp.viewmodel.HomeViewModelFactory
 import com.example.controlcomprasapp.viewmodel.ProductViewModel
 import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(
@@ -48,7 +53,7 @@ fun AppNavigation(
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = { navController.navigate(Screen.Facturas.route) },
+                    onClick = { navController.navigate(Screen.NuevaFactura.route) },
                     icon = { Icon(Icons.Default.AddCircle, null) },
                     label = { Text("Facturas") }
                 )
@@ -67,7 +72,15 @@ fun AppNavigation(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Screen.Home.route) { HomeScreen(homeFactory) }
+
+            composable(Screen.NuevaFactura.route) {
+                NuevaFacturaScreen(navController)
+            }
             composable(Screen.Facturas.route) { FacturaScreen(factory, navController) }
+
+            composable(Screen.FacturaManual.route) {
+                FacturaManualScreen(factory, navController)
+            }
             composable(Screen.Productos.route) {
                 val viewModel: ProductViewModel = viewModel(factory = productFactory)
                 ProductosScreen(viewModel)
