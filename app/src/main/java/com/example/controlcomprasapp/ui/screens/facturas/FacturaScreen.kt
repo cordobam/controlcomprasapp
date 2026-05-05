@@ -6,6 +6,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -75,7 +76,6 @@ fun FacturaScreen(
 ) {
     val viewModel: FacturaViewModel = viewModel(factory = factory)
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
 
     var imagenUriString by rememberSaveable { mutableStateOf<String?>(null) }
     val imagenUri = imagenUriString?.let { Uri.parse(it) }
@@ -86,6 +86,8 @@ fun FacturaScreen(
     val surfaceDark = Color(0xFF1A1D24)
     val borderDark = Color(0xFF2A2D35)
     val accentBlue = Color(0xFF4A9EFF)
+
+    val hayDatos = viewModel.local.isNotBlank() || viewModel.fecha != null
 
     // Launchers
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {}
@@ -103,30 +105,27 @@ fun FacturaScreen(
         }
     }
 
-    val hayDatos = viewModel.local.isNotBlank() || viewModel.fecha != null
-
-    // ── CONTENEDOR PRINCIPAL ──
+    // ── CONTENEDOR PRINCIPAL ──────────────────────────────────────────────────
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundDark)
     ) {
-        // ── PARTE SUPERIOR (55% de la pantalla) ──
-        // Usamos weight(0.55f) para garantizar que no use TODA la pantalla
+
+        // ── PARTE SUPERIOR — preview + íconos + meta ──────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.55f)
-                .verticalScroll(scrollState)
+                .weight(0.52f)
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
             // PREVIEW
             Box(
                 modifier = Modifier
-                    .height(180.dp)
+                    .weight(1f)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
                     .background(surfaceDark)
@@ -142,7 +141,7 @@ fun FacturaScreen(
                             model = uri,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit // Fit es mejor para tickets largos
+                            contentScale = ContentScale.Fit
                         )
                     }
                 } ?: Column(
@@ -159,35 +158,41 @@ fun FacturaScreen(
                 }
             }
 
-            // BOTONES
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    ActionButton("Cámara", "Foto nueva", Icons.Outlined.CameraAlt, Modifier.weight(1f), true) {
-                        permissionLauncher.launch(Manifest.permission.CAMERA)
-                    }
-                    ActionButton("Galería", "Archivo", Icons.Outlined.Photo, Modifier.weight(1f)) {
-                        galeriaLauncher.launch(arrayOf("image/*", "application/pdf"))
-                    }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    ActionButton("Escanear", "Leer OCR", Icons.Outlined.Search, Modifier.weight(1f)) {
-                        imagenUri?.let { viewModel.procesarUri(context, it) }
-                    }
-                    ActionButton("Guardar", "Listo", Icons.Outlined.Save, Modifier.weight(1f), false, hayDatos) {
-                        viewModel.guardar()
-                    }
-                }
+            // ── BOTONES — una sola fila de íconos ────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                IconActionButton(
+                    icon = Icons.Outlined.CameraAlt,
+                    label = "Cámara",
+                    isPrimary = true,
+                    modifier = Modifier.weight(1f)
+                ) { permissionLauncher.launch(Manifest.permission.CAMERA) }
+
+                IconActionButton(
+                    icon = Icons.Outlined.Photo,
+                    label = "Galería",
+                    modifier = Modifier.weight(1f)
+                ) { galeriaLauncher.launch(arrayOf("image/*", "application/pdf")) }
+
+                IconActionButton(
+                    icon = Icons.Outlined.Search,
+                    label = "Escanear",
+                    modifier = Modifier.weight(1f),
+                    enabled = imagenUri != null
+                ) { imagenUri?.let { viewModel.procesarUri(context, it) } }
             }
 
-            // META INFO
+            // ── META INFO ─────────────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(surfaceDark)
                     .border(0.5.dp, borderDark, RoundedCornerShape(12.dp))
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 MetaRow("Local", viewModel.local.ifBlank { "—" })
                 HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
@@ -197,25 +202,73 @@ fun FacturaScreen(
             }
         }
 
-        // ── PARTE INFERIOR (45% de la pantalla) ──
-        // Al darle un weight(0.45f), obligamos a que esta sección SIEMPRE se vea
+        // ── PARTE INFERIOR — lista siempre visible ────────────────────────────
         TabsItemsDescuentos(
             listaItems = items,
             descuentos = descuentos,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.45f)
+                .weight(0.48f)
                 .padding(horizontal = 16.dp)
-                .padding(top = 12.dp, bottom = 8.dp)
+                .padding(top = 8.dp)
         )
+
+        // ── BOTTOM BAR — Guardar siempre visible, sin scroll ─────────────────
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(surfaceDark)
+                .border(BorderStroke(0.5.dp, borderDark))
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Total a la izquierda
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Total", color = Color(0xFF555555), fontSize = 11.sp)
+                Text(
+                    "$${items.sumOf { it.total }}",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // Botón guardar a la derecha
+            Button(
+                onClick = { viewModel.guardar() },
+                enabled = hayDatos,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = accentBlue,
+                    disabledContainerColor = Color(0xFF1C2A3A)
+                ),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.height(42.dp)
+            ) {
+                Icon(
+                    Icons.Outlined.Save,
+                    contentDescription = null,
+                    tint = if (hayDatos) Color.Black else Color(0xFF2A4A6A),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    "Guardar",
+                    color = if (hayDatos) Color.Black else Color(0xFF2A4A6A),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
     }
 }
 
+// ── Botón ícono compacto ──────────────────────────────────────────────────────
+
 @Composable
-private fun ActionButton(
-    label: String,
-    sub: String,
+private fun IconActionButton(
     icon: ImageVector,
+    label: String,
     modifier: Modifier = Modifier,
     isPrimary: Boolean = false,
     enabled: Boolean = true,
@@ -223,27 +276,42 @@ private fun ActionButton(
 ) {
     val bgColor = if (isPrimary) Color(0xFF1C2A3A) else Color(0xFF1A1D24)
     val borderColor = if (isPrimary) Color(0xFF1F4068) else Color(0xFF2A2D35)
-    val iconTint = if (isPrimary) Color(0xFF4A9EFF) else Color(0xFF888888)
+    val iconTint = when {
+        !enabled -> Color(0xFF333333)
+        isPrimary -> Color(0xFF4A9EFF)
+        else -> Color(0xFF888888)
+    }
+    val labelColor = when {
+        !enabled -> Color(0xFF333333)
+        isPrimary -> Color(0xFF4A9EFF)
+        else -> Color(0xFFCCCCCC)
+    }
 
-    Box(
+    Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor.copy(alpha = if (enabled) 1f else 0.4f))
-            .border(0.5.dp, borderColor, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
+            .background(bgColor.copy(alpha = if (enabled) 1f else 0.5f))
+            .border(0.5.dp, borderColor, RoundedCornerShape(10.dp))
             .clickable(enabled = enabled) { onClick() }
-            .padding(10.dp)
+            .padding(vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column {
-            Icon(icon, null, tint = iconTint, modifier = Modifier.size(18.dp))
-            Text(label, color = if (isPrimary) Color(0xFF4A9EFF) else Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-            Text(sub, color = Color.Gray, fontSize = 10.sp)
-        }
+        Icon(icon, contentDescription = label, tint = iconTint, modifier = Modifier.size(20.dp))
+        Text(label, fontSize = 10.sp, color = labelColor)
     }
 }
 
+// ── MetaRow sin cambios ───────────────────────────────────────────────────────
+
 @Composable
 private fun MetaRow(key: String, value: String) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(key, color = Color.Gray, fontSize = 12.sp)
         Text(value, color = Color.LightGray, fontSize = 12.sp, fontStyle = FontStyle.Italic)
     }
