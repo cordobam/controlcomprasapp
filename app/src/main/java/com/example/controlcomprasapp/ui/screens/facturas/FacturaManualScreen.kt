@@ -205,12 +205,6 @@ private fun TabDatos(
             onValueChange = { viewModel.fecha = it },
             placeholder = "dd/mm/aaaa"
         )
-        ManualField(
-            label = "Nro. comprobante",
-            value = viewModel.archivo,
-            onValueChange = { viewModel.archivo = it },
-            placeholder = "Opcional"
-        )
     }
 }
 
@@ -293,26 +287,32 @@ private fun TabItems(
 
     // Dialog agregar item
     if (showAddDialog) {
-        var nombreDesc by remember { mutableStateOf("") }
-        var totalDesc by remember { mutableStateOf("") }
+        var nombreItem by remember { mutableStateOf("") }
+        var precioUnitario by remember { mutableStateOf("") }
+        var cantidad by remember { mutableStateOf("") }
+        var seccion by remember { mutableStateOf("") }
 
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
             containerColor = Color(0xFF1A1D24),
-            title = { Text("Agregar descuento", color = Color.White, fontSize = 15.sp) },
+            title = { Text("Agregar item", color = Color.White, fontSize = 15.sp) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ManualField("Descripción", nombreDesc, { nombreDesc = it }, "Ej: Descuento socio")
-                    ManualField("Monto", totalDesc, { totalDesc = it }, "Ej: 200", isNumber = true)
+                    ManualField("Descripción", nombreItem, { nombreItem = it }, "Ej: Pollo")
+                    ManualField("Precio Unitario", precioUnitario, { precioUnitario = it }, "Ej: 200", isNumber = true)
+                    ManualField("Cantidad", cantidad, { cantidad = it }, "Ej: 1", isNumber = true)
+                    ManualField("Seccion", seccion, { seccion = it }, "Ej: Carniceria", isNumber = true)
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
-                    val total = totalDesc.toDoubleOrNull() ?: 0.0
-                    if (nombreDesc.isNotBlank() && total > 0) {
-                        viewModel.agregarDescuento(
-                            nombre = nombreDesc,
-                            total = total
+                    val precioUnitario = precioUnitario.toDoubleOrNull() ?: 0.0
+                    if (nombreItem.isNotBlank() && precioUnitario > 0) {
+                        viewModel.agregarItem(
+                            nombre = nombreItem,
+                            cantidad=cantidad.toIntOrNull() ?: 1,
+                            precioUnitario  = precioUnitario ,
+                            seccion=seccion
                         )
                         showAddDialog = false
                     }
