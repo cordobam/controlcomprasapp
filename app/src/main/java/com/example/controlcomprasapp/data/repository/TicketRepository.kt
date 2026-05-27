@@ -22,17 +22,28 @@ class TicketRepository(
         nombreLocal: String,
         nombreArchivo: String,
         items: List<ItemTicket>,
-        descuentos: List<Descuentos>
+        descuentos: List<Descuentos>,
+        esManual: Boolean = false
     ): Boolean{
 
-        val archivoResult  = archivoDataSource.insertOrGet(nombreArchivo)
+        val archivoId: Long
 
-        if (!archivoResult .inserted) {
-            Log.d("TICKET_DUPLICADO", "El ticket ya fue cargado")
-            return false
+        if (esManual) {
+            val archivo = archivoDataSource.insertOrGet("manual_${System.currentTimeMillis()}")
+            archivoId = archivo.id
+        } else {
+
+            val archivoResult  = archivoDataSource.insertOrGet(nombreArchivo)
+
+            if (!archivoResult .inserted) {
+                Log.d("TICKET_DUPLICADO", "El ticket ya fue cargado")
+                return false
+            }
+
+            archivoId = archivoResult.id
         }
 
-        val archivoId = archivoResult.id
+
 
         val localId = localDataSource.insertOrGet(nombreLocal)
 

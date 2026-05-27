@@ -40,7 +40,8 @@ class FacturaViewModel(
             nombreLocal = local,
             nombreArchivo = archivo,
             items = items,
-            descuentos=descuentos)
+            descuentos=descuentos,
+            esManual = archivo.isBlank())
     }
 
     fun procesarUri(context: Context, uri: Uri) {
