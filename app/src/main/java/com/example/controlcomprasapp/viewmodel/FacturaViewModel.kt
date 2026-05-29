@@ -34,9 +34,9 @@ class FacturaViewModel(
 
     // agregar nuevo parser en caso de agregar factura de otro lugar
     fun guardar() : Boolean{
-
+        val fechaNormalizada = normalizarFecha(fecha)
         return repo.guardarTicketCompleto(
-            fecha = fecha ?: "",
+            fecha = fechaNormalizada ?: "",
             nombreLocal = local,
             nombreArchivo = archivo,
             items = items,
@@ -130,6 +130,21 @@ class FacturaViewModel(
         fecha = null
         local = ""
         archivo = ""
+    }
+
+    fun normalizarFecha(fecha:String?): String?{
+        if (fecha== null) return null
+        if (fecha.matches(Regex("""\d{4}-\d{2}-\d{2}"""))) return fecha
+
+        val normalizada = fecha.replace(Regex("""[-.]"""),"/")
+        val partes = fecha.split("/")
+        if (partes.size == 3){
+            val dia = partes[0].padStart(2,'0')
+            val mes = partes[1].padStart(2,'0')
+            val anio = if (partes[2].length == 2) "20${partes[2]}" else partes[2]
+            return "$anio-$mes-$dia"
+        }
+        return fecha
     }
 
 }

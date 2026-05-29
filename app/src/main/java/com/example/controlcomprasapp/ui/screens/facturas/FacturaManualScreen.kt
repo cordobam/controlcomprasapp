@@ -301,7 +301,7 @@ private fun TabItems(
                     ManualField("Descripción", nombreItem, { nombreItem = it }, "Ej: Pollo")
                     ManualField("Precio Unitario", precioUnitario, { precioUnitario = it }, "Ej: 200", isNumber = true)
                     ManualField("Cantidad", cantidad, { cantidad = it }, "Ej: 1", isNumber = true)
-                    ManualField("Seccion", seccion, { seccion = it }, "Ej: Carniceria", isNumber = true)
+                    ManualField("Seccion", seccion, { seccion = it }, "Ej: Carniceria")
                 }
             },
             confirmButton = {
