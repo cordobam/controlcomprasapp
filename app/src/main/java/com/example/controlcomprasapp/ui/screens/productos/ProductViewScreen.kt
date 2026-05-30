@@ -5,7 +5,6 @@ import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,11 +31,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +43,6 @@ import com.example.controlcomprasapp.data.local.datasource.ProductFilter
 import com.example.controlcomprasapp.domain.model.Locales
 import com.example.controlcomprasapp.viewmodel.ProductViewModel
 import java.util.Calendar
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -55,7 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import com.google.android.engage.shopping.datamodel.ShoppingCart
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ProductosScreen(viewModel: ProductViewModel) {
@@ -66,11 +61,7 @@ fun ProductosScreen(viewModel: ProductViewModel) {
     var fechaHasta by remember { mutableStateOf("") }
     var localSeleccionado by remember { mutableStateOf<Locales?>(null) }
 
-    val locales = listOf(
-        Locales(1, "Carrefour"),
-        Locales(2, "Disco"),
-        Locales(3, "Vea")
-    )
+    val locales by viewModel.locales.collectAsStateWithLifecycle()
 
     val backgroundDark = Color(0xFF111318)
     val surfaceDark = Color(0xFF1A1D24)

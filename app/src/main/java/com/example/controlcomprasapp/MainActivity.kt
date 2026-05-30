@@ -1,8 +1,10 @@
 package com.example.controlcomprasapp
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.controlcomprasapp.data.local.datasource.ArchivoDataSource
 import com.example.controlcomprasapp.data.local.datasource.LocalDataSource
@@ -23,6 +25,7 @@ import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
 
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -40,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
             val factory = FacturaViewModelFactory(repo, parseManager)
 
-            val productRepository = ProductRepository(dataSource , descuentosDataSource)
+            val productRepository = ProductRepository(dataSource , descuentosDataSource,localDataSource)
             val productFactory = ProductViewModelFactory(productRepository)
 
             val homeRepository = HomeRepository(HomeDataSoucrce = homeDataSource)
