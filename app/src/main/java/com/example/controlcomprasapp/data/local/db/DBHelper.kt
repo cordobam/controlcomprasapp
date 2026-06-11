@@ -53,11 +53,43 @@ class DbHelper(context: Context) :
                 nombre TEXT unique
             )""".trimIndent()
 
+        val createTableGastosFijos = """
+            CREATE TABLE gastos_fijos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                monto REAL NOT NULL DEFAULT 0
+            )""".trimIndent()
+
+        val createTableGastosMensuales = """
+            CREATE TABLE gastos_mensuales (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_gasto_fijo INTEGER,
+                nombre TEXT NOT NULL,
+                monto REAL NOT NULL,
+                mes INTEGER NOT NULL,
+                anio INTEGER NOT NULL,
+                es_fijo INTEGER NOT NULL DEFAULT 0,
+                pagado INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY(id_gasto_fijo) REFERENCES gastos_fijos(id)
+            )""".trimIndent()
+
+        val createTableIngresos = """
+            CREATE TABLE ingresos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                monto REAL NOT NULL,
+                mes INTEGER NOT NULL,
+                anio INTEGER NOT NULL
+            )""".trimIndent()
+
         db.execSQL(createTableTicket)
         db.execSQL(createTableItemTicket)
         db.execSQL(createTableLocales)
         db.execSQL(createTableDescuentos)
         db.execSQL(createTableArchivos)
+        db.execSQL(createTableGastosFijos)
+        db.execSQL(createTableGastosMensuales)
+        db.execSQL(createTableIngresos)
 
     }
 
