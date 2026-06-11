@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -25,9 +26,11 @@ import com.example.controlcomprasapp.ui.components.TopBar
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaManualScreen
 import com.example.controlcomprasapp.ui.screens.facturas.FacturaScreen
 import com.example.controlcomprasapp.ui.screens.facturas.NuevaFacturaScreen
+import com.example.controlcomprasapp.ui.screens.gastos.GestionGastosScreen
 import com.example.controlcomprasapp.ui.screens.home.HomeScreen
 import com.example.controlcomprasapp.ui.screens.home.SurfaceDark
 import com.example.controlcomprasapp.ui.screens.productos.ProductosScreen
+import com.example.controlcomprasapp.viewmodel.GastoViewModelFactory
 import com.example.controlcomprasapp.viewmodel.HomeViewModelFactory
 import com.example.controlcomprasapp.viewmodel.ProductViewModel
 import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
@@ -38,7 +41,8 @@ import com.example.controlcomprasapp.viewmodel.ProductViewModelFactory
 fun AppNavigation(
     factory: FacturaViewModelFactory,
     productFactory: ProductViewModelFactory,
-    homeFactory: HomeViewModelFactory
+    homeFactory: HomeViewModelFactory,
+    gastoFactory: GastoViewModelFactory
 ) {
     val navController = rememberNavController()
 
@@ -63,6 +67,12 @@ fun AppNavigation(
                     icon = { Icon(Icons.Default.List, null) },
                     label = { Text("Productos") }
                 )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { navController.navigate(Screen.Gastos.route) },
+                    icon = { Icon(Icons.Outlined.AccountBalanceWallet, null) },
+                    label = { Text("Gastos") }
+                )
             }
         }
     ) { paddingValues ->
@@ -84,6 +94,11 @@ fun AppNavigation(
             composable(Screen.Productos.route) {
                 val viewModel: ProductViewModel = viewModel(factory = productFactory)
                 ProductosScreen(viewModel)
+            }
+            composable(Screen.Gastos.route) {
+                val viewModel: com.example.controlcomprasapp.viewmodel.GastoViewModel =
+                    viewModel(factory = gastoFactory)
+                GestionGastosScreen(viewModel)
             }
         }
     }
