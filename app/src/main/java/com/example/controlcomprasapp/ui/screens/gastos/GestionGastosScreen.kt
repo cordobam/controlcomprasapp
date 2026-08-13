@@ -79,6 +79,9 @@ fun GestionGastosScreen(viewModel: GastoViewModel) {
 
     var expandedMes by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableIntStateOf(0) }
+    val esMesPasado = LocalDate.of(
+        viewModel.anioSeleccionado, viewModel.mesSeleccionado, 1
+    ).isBefore(LocalDate.now().withDayOfMonth(1))
     val tabs = listOf(
         "Fijos (${viewModel.gastosDelMes.count { it.esFijo }})",
         "Excepcionales",
@@ -130,7 +133,7 @@ fun GestionGastosScreen(viewModel: GastoViewModel) {
                     onDismissRequest = { expandedMes = false }
                 ) {
                     val current = LocalDate.now()
-                    for (i in 0 until 12) {
+                    for (i in 0 until 5) {
                         val date = current.minusMonths(i.toLong())
                         val label = date.month.getDisplayName(MonthTextStyle.FULL, Locale("es", "ES"))
                             .replaceFirstChar { it.uppercase() } + " ${date.year}"
@@ -228,10 +231,12 @@ fun GestionGastosScreen(viewModel: GastoViewModel) {
             when (selectedTab) {
                 0 -> TabGastosFijos(
                     gastos = viewModel.gastosDelMes.filter { it.esFijo },
+                    esMesPasado = esMesPasado,
                     onTogglePagado = { viewModel.togglePagado(it) },
                     onActualizarMonto = { id, monto -> viewModel.actualizarMontoGastoMensual(id, monto) },
                     onEliminar = { viewModel.eliminarGasto(it) },
                     onAgregar = { nombre, monto -> viewModel.agregarGastoFijo(nombre, monto) },
+                    onCopiarDelMesAnterior = { viewModel.copiarGastosFijosDelMesAnterior() },
                     surfaceDark = surfaceDark,
                     borderDark = borderDark,
                     accentBlue = accentBlue,
@@ -239,6 +244,7 @@ fun GestionGastosScreen(viewModel: GastoViewModel) {
                 )
                 1 -> TabGastosExcepcionales(
                     gastos = viewModel.gastosDelMes.filter { !it.esFijo },
+                    esMesPasado = esMesPasado,
                     onTogglePagado = { viewModel.togglePagado(it) },
                     onActualizarMonto = { id, monto -> viewModel.actualizarMontoGastoMensual(id, monto) },
                     onEliminar = { viewModel.eliminarGasto(it) },
@@ -250,6 +256,7 @@ fun GestionGastosScreen(viewModel: GastoViewModel) {
                 )
                 2 -> TabIngresos(
                     ingresos = viewModel.ingresosDelMes,
+                    esMesPasado = esMesPasado,
                     onEliminar = { viewModel.eliminarIngreso(it) },
                     onAgregar = { nombre, monto -> viewModel.agregarIngreso(nombre, monto) },
                     surfaceDark = surfaceDark,
@@ -265,10 +272,12 @@ fun GestionGastosScreen(viewModel: GastoViewModel) {
 @Composable
 private fun TabGastosFijos(
     gastos: List<GastoMensual>,
+    esMesPasado: Boolean,
     onTogglePagado: (GastoMensual) -> Unit,
     onActualizarMonto: (Long, Double) -> Unit,
     onEliminar: (GastoMensual) -> Unit,
     onAgregar: (String, Double) -> Unit,
+    onCopiarDelMesAnterior: () -> Int,
     surfaceDark: Color,
     borderDark: Color,
     accentBlue: Color,
@@ -283,6 +292,7 @@ private fun TabGastosFijos(
         items(gastos) { gasto ->
             GastoRow(
                 gasto = gasto,
+                esMesPasado = esMesPasado,
                 onTogglePagado = onTogglePagado,
                 onActualizarMonto = onActualizarMonto,
                 onEliminar = onEliminar,
@@ -306,19 +316,38 @@ private fun TabGastosFijos(
 
         item {
             Spacer(Modifier.height(4.dp))
+            if (!esMesPasado) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(surfaceDark)
+                        .border(0.5.dp, borderDark, RoundedCornerShape(10.dp))
+                        .clickable { onCopiarDelMesAnterior() }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(" Copiar fijos del mes anterior", color = accentBlue, fontSize = 13.sp)
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(surfaceDark)
                     .border(0.5.dp, borderDark, RoundedCornerShape(10.dp))
-                    .clickable { showAddDialog = true }
+                    .clickable(enabled = !esMesPasado) { showAddDialog = true }
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Outlined.Add, null, tint = accentBlue, modifier = Modifier.size(18.dp))
-                Text(" Agregar gasto fijo", color = accentBlue, fontSize = 13.sp)
+                Icon(Icons.Outlined.Add, null, tint = if (esMesPasado) Color(0xFF333333) else accentBlue, modifier = Modifier.size(18.dp))
+                Text(
+                    " Agregar gasto fijo",
+                    color = if (esMesPasado) Color(0xFF333333) else accentBlue,
+                    fontSize = 13.sp
+                )
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -339,6 +368,7 @@ private fun TabGastosFijos(
 @Composable
 private fun TabGastosExcepcionales(
     gastos: List<GastoMensual>,
+    esMesPasado: Boolean,
     onTogglePagado: (GastoMensual) -> Unit,
     onActualizarMonto: (Long, Double) -> Unit,
     onEliminar: (GastoMensual) -> Unit,
@@ -357,6 +387,7 @@ private fun TabGastosExcepcionales(
         items(gastos) { gasto ->
             GastoRow(
                 gasto = gasto,
+                esMesPasado = esMesPasado,
                 onTogglePagado = onTogglePagado,
                 onActualizarMonto = onActualizarMonto,
                 onEliminar = onEliminar,
@@ -386,13 +417,17 @@ private fun TabGastosExcepcionales(
                     .clip(RoundedCornerShape(10.dp))
                     .background(surfaceDark)
                     .border(0.5.dp, borderDark, RoundedCornerShape(10.dp))
-                    .clickable { showAddDialog = true }
+                    .clickable(enabled = !esMesPasado) { showAddDialog = true }
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Outlined.Add, null, tint = accentBlue, modifier = Modifier.size(18.dp))
-                Text(" Agregar gasto excepcional", color = accentBlue, fontSize = 13.sp)
+                Icon(Icons.Outlined.Add, null, tint = if (esMesPasado) Color(0xFF333333) else accentBlue, modifier = Modifier.size(18.dp))
+                Text(
+                    " Agregar gasto excepcional",
+                    color = if (esMesPasado) Color(0xFF333333) else accentBlue,
+                    fontSize = 13.sp
+                )
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -413,6 +448,7 @@ private fun TabGastosExcepcionales(
 @Composable
 private fun TabIngresos(
     ingresos: List<Ingreso>,
+    esMesPasado: Boolean,
     onEliminar: (Ingreso) -> Unit,
     onAgregar: (String, Double) -> Unit,
     surfaceDark: Color,
@@ -429,6 +465,7 @@ private fun TabIngresos(
         items(ingresos) { ingreso ->
             IngresoRow(
                 ingreso = ingreso,
+                esMesPasado = esMesPasado,
                 onEliminar = onEliminar,
                 surfaceDark = surfaceDark,
                 borderDark = borderDark,
@@ -455,13 +492,17 @@ private fun TabIngresos(
                     .clip(RoundedCornerShape(10.dp))
                     .background(surfaceDark)
                     .border(0.5.dp, borderDark, RoundedCornerShape(10.dp))
-                    .clickable { showAddDialog = true }
+                    .clickable(enabled = !esMesPasado) { showAddDialog = true }
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Outlined.Add, null, tint = accentBlue, modifier = Modifier.size(18.dp))
-                Text(" Agregar ingreso", color = accentBlue, fontSize = 13.sp)
+                Icon(Icons.Outlined.Add, null, tint = if (esMesPasado) Color(0xFF333333) else accentBlue, modifier = Modifier.size(18.dp))
+                Text(
+                    " Agregar ingreso",
+                    color = if (esMesPasado) Color(0xFF333333) else accentBlue,
+                    fontSize = 13.sp
+                )
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -482,6 +523,7 @@ private fun TabIngresos(
 @Composable
 private fun GastoRow(
     gasto: GastoMensual,
+    esMesPasado: Boolean,
     onTogglePagado: (GastoMensual) -> Unit,
     onActualizarMonto: (Long, Double) -> Unit,
     onEliminar: (GastoMensual) -> Unit,
@@ -541,10 +583,10 @@ private fun GastoRow(
         } else {
             Text(
                 "\u270e",
-                color = Color(0xFF555555),
+                color = if (esMesPasado) Color(0xFF333333) else Color(0xFF555555),
                 fontSize = 14.sp,
                 modifier = Modifier
-                    .clickable { editandoMonto = true }
+                    .clickable(enabled = !esMesPasado) { editandoMonto = true }
                     .padding(horizontal = 4.dp)
             )
         }
@@ -553,7 +595,7 @@ private fun GastoRow(
 
         Switch(
             checked = gasto.pagado,
-            onCheckedChange = { onTogglePagado(gasto) },
+            onCheckedChange = if (esMesPasado) null else { checked -> onTogglePagado(gasto) },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = accentGreen,
                 uncheckedThumbColor = Color(0xFF555555),
@@ -565,10 +607,10 @@ private fun GastoRow(
 
         Text(
             "\u2715",
-            color = Color(0xFF444444),
+            color = if (esMesPasado) Color(0xFF333333) else Color(0xFF444444),
             fontSize = 16.sp,
             modifier = Modifier
-                .clickable { onEliminar(gasto) }
+                .clickable(enabled = !esMesPasado) { onEliminar(gasto) }
                 .padding(start = 8.dp)
         )
     }
@@ -577,6 +619,7 @@ private fun GastoRow(
 @Composable
 private fun IngresoRow(
     ingreso: Ingreso,
+    esMesPasado: Boolean,
     onEliminar: (Ingreso) -> Unit,
     surfaceDark: Color,
     borderDark: Color,
@@ -608,9 +651,9 @@ private fun IngresoRow(
         Spacer(Modifier.width(12.dp))
         Text(
             "\u2715",
-            color = Color(0xFF444444),
+            color = if (esMesPasado) Color(0xFF333333) else Color(0xFF444444),
             fontSize = 16.sp,
-            modifier = Modifier.clickable { onEliminar(ingreso) }
+            modifier = Modifier.clickable(enabled = !esMesPasado) { onEliminar(ingreso) }
         )
     }
 }

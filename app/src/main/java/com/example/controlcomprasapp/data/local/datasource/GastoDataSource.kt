@@ -1,10 +1,13 @@
 package com.example.controlcomprasapp.data.local.datasource
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.controlcomprasapp.data.local.db.DbHelper
 import com.example.controlcomprasapp.domain.model.GastoFijo
 import com.example.controlcomprasapp.domain.model.GastoMensual
 import com.example.controlcomprasapp.domain.model.Ingreso
+import java.time.LocalDate
 
 class GastoDataSource(context: Context) {
     private val dbHelper = DbHelper(context)
@@ -133,6 +136,47 @@ class GastoDataSource(context: Context) {
                 )
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun copiarGastosFijosDelMesAnterior(mes: Int, anio: Int): Int {
+        val db = dbHelper.writableDatabase
+        val mesAnterior = LocalDate.of(anio, mes, 1).minusMonths(1)
+        val mesAnt = mesAnterior.monthValue
+        val anioAnt = mesAnterior.year
+        val cursor = db.rawQuery(
+            """SELECT * FROM gastos_mensuales 
+               WHERE es_fijo = 1 AND mes = ? AND anio = ?""",
+            arrayOf(mesAnt.toString(), anioAnt.toString())
+        )
+        var insertados = 0
+        while (cursor.moveToNext()) {
+            val idGastoFijo = cursor.getLong(cursor.getColumnIndexOrThrow("id_gasto_fijo"))
+            val existeCursor = db.rawQuery(
+                """SELECT id FROM gastos_mensuales 
+                   WHERE id_gasto_fijo = ? AND mes = ? AND anio = ?""",
+                arrayOf(idGastoFijo.toString(), mes.toString(), anio.toString())
+            )
+            val existe = existeCursor.moveToFirst()
+            existeCursor.close()
+            if (!existe) {
+                db.execSQL(
+                    """INSERT INTO gastos_mensuales 
+                       (id_gasto_fijo, nombre, monto, mes, anio, es_fijo, pagado) 
+                       VALUES (?, ?, ?, ?, ?, 1, 0)""",
+                    arrayOf(
+                        idGastoFijo,
+                        cursor.getString(cursor.getColumnIndexOrThrow("nombre")),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow("monto")),
+                        mes,
+                        anio
+                    )
+                )
+                insertados++
+            }
+        }
+        cursor.close()
+        return insertados
     }
 
     fun obtenerIngresosDelMes(mes: Int, anio: Int): List<Ingreso> {
