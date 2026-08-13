@@ -87,4 +87,7 @@ dependencies {
 
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("com.google.android.material:material:1.11.0")
+
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
 }
