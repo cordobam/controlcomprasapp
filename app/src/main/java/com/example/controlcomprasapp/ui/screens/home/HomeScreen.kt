@@ -3,6 +3,7 @@ package com.example.controlcomprasapp.ui.screens.home
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -29,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.LocalMall
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.TrendingDown
@@ -43,15 +46,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.controlcomprasapp.data.local.dto.DescuentosDTO
+import com.example.controlcomprasapp.data.local.dto.ItemTicketDTO
+import com.example.controlcomprasapp.data.local.dto.ProductoDTO
 import com.example.controlcomprasapp.viewmodel.HomeViewModel
 import com.example.controlcomprasapp.viewmodel.HomeViewModelFactory
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
+import com.patrykandpatrick.vico.compose.common.fill
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
+import kotlin.math.roundToInt
 
 val BackgroundDark = Color(0xFF111318)
 
@@ -86,6 +109,7 @@ fun HomeScreen(factory: HomeViewModelFactory) {
     val items_gastos = viewModel.items_gastos
     val items_prductos = viewModel.items_prductos
     var expanded by remember { mutableStateOf(false) }
+    var mostrarGraficos by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadMeses()
@@ -255,7 +279,8 @@ fun HomeScreen(factory: HomeViewModelFactory) {
                     titulo = section.titulo,
                     icono = section.icono,
                     colorIcono = section.colorIcono,
-                    surfaceColor = SurfaceDark
+                    surfaceColor = SurfaceDark,
+                    onVerGrafico = { mostrarGraficos = true }
                 ) {
                     section.content()
                 }
@@ -279,6 +304,15 @@ fun HomeScreen(factory: HomeViewModelFactory) {
             }
         }
 
+        // ── CARD DE GRÁFICOS (visible al tocar "Ver gráfico") ──
+        if (mostrarGraficos) {
+            GraficosCard(
+                descuentos = items,
+                gastos = items_gastos,
+                productos = items_prductos
+            )
+        }
+
         Spacer(modifier = Modifier.height(50.dp)) // Espacio para el menú inferior
     }
 }
@@ -300,7 +334,7 @@ fun MetricBox(modifier: Modifier, label: String, value: String, colorValue: Colo
 }
 
 @Composable
-fun SectionCard(titulo: String, icono: ImageVector, colorIcono: Color, surfaceColor: Color, content: @Composable () -> Unit) {
+fun SectionCard(titulo: String, icono: ImageVector, colorIcono: Color, surfaceColor: Color, onVerGrafico: (() -> Unit)? = null, content: @Composable () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -316,6 +350,18 @@ fun SectionCard(titulo: String, icono: ImageVector, colorIcono: Color, surfaceCo
         ) {
             Icon(icono, null, modifier = Modifier.size(20.dp), tint = colorIcono)
             Text(titulo, color = TextLight, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            if (onVerGrafico != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colorIcono.copy(alpha = 0.15f))
+                        .clickable { onVerGrafico() }
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text("Ver gráfico", color = colorIcono, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
         }
         HorizontalDivider(color = BorderDark, thickness = 1.dp)
         Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) { // Scroll interno si hay muchos items
@@ -353,5 +399,249 @@ fun RankBadge(rank: Int) {
     ) {
         Text(rank.toString(), color = TextGray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
     }
+}
+
+// --- GRÁFICOS DEL MES ---
+
+val DonutColors = listOf(
+    AccentBlue,
+    AccentGreen,
+    AccentOrange,
+    Color(0xFFA78BFA),
+    Color(0xFFF472B6),
+    Color(0xFF34D399),
+    Color(0xFFFBBF24),
+    Color(0xFF64748B)
+)
+
+@Composable
+fun GraficosCard(
+    descuentos: List<DescuentosDTO>,
+    gastos: List<ItemTicketDTO>,
+    productos: List<ProductoDTO>
+) {
+    val totalTitulos = listOf("Top descuentos", "Gastos por rubro", "Top productos")
+    val graficosPagerState = rememberPagerState(pageCount = { totalTitulos.size })
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(SurfaceDark)
+            .border(1.dp, BorderDark, RoundedCornerShape(20.dp))
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(Icons.Default.BarChart, null, modifier = Modifier.size(20.dp), tint = AccentBlue)
+            Text("Gráficos del mes", color = TextLight, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+        HorizontalDivider(color = BorderDark, thickness = 1.dp)
+        Spacer(Modifier.height(12.dp))
+
+        HorizontalPager(
+            state = graficosPagerState,
+            pageSpacing = 16.dp,
+            contentPadding = PaddingValues(horizontal = 0.dp),
+            modifier = Modifier.fillMaxWidth().height(480.dp)
+        ) { page ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                when (page) {
+                    0 -> GraficoTopDescuentos(descuentos)
+                    1 -> GraficoGastosRubro(gastos)
+                    else -> GraficoTopProductos(productos)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            repeat(totalTitulos.size) { iteration ->
+                val color = if (graficosPagerState.currentPage == iteration) AccentBlue else BorderDark
+                Box(
+                    modifier = Modifier
+                        .padding(3.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                        .size(8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GraficoTopDescuentos(items: List<DescuentosDTO>) {
+    val top = items.take(5)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text("Top descuentos", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(8.dp))
+        if (top.isEmpty()) {
+            Box(Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
+                Text("Sin datos", color = TextGray, fontSize = 13.sp)
+            }
+        } else {
+            VicoColumnChart(
+                valores = top.map { it.total },
+                nombres = top.map { it.nombre },
+                color = AccentGreen
+            )
+            Spacer(Modifier.height(12.dp))
+            top.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Box(Modifier.size(10.dp).clip(RoundedCornerShape(3.dp)).background(AccentGreen))
+                        Spacer(Modifier.width(8.dp))
+                        Text(item.nombre, color = TextLight, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Text("$${item.total}", color = AccentGreen, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GraficoGastosRubro(items: List<ItemTicketDTO>) {
+    val top = items.take(7).filter { it.total > 0 }
+    val total = top.sumOf { it.total.toDouble() }.toFloat()
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text("Gastos por rubro", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(8.dp))
+        if (top.isEmpty() || total <= 0f) {
+            Box(Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
+                Text("Sin datos", color = TextGray, fontSize = 13.sp)
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Canvas(
+                    modifier = Modifier
+                        .padding(vertical = 12.dp)
+                        .size(180.dp)
+                ) {
+                    val strokeWidth = 30.dp.toPx()
+                    val inset = strokeWidth / 2
+                    var startAngle = -90f
+                    top.forEachIndexed { index, item ->
+                        val sweepAngle = (item.total.toFloat() / total * 360f)
+                        drawArc(
+                            color = DonutColors[index % DonutColors.size],
+                            startAngle = startAngle,
+                            sweepAngle = sweepAngle - 1f,
+                            useCenter = false,
+                            topLeft = Offset(inset, inset),
+                            size = Size(size.width - strokeWidth, size.height - strokeWidth),
+                            style = Stroke(width = strokeWidth)
+                        )
+                        startAngle += sweepAngle
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            top.forEachIndexed { index, item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Box(Modifier.size(10.dp).clip(RoundedCornerShape(3.dp)).background(DonutColors[index % DonutColors.size]))
+                        Spacer(Modifier.width(8.dp))
+                        Text(item.seccion, color = TextLight, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Text("$${item.total}", color = TextLight, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GraficoTopProductos(items: List<ProductoDTO>) {
+    val top = items.take(5)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text("Top productos", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(8.dp))
+        if (top.isEmpty()) {
+            Box(Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
+                Text("Sin datos", color = TextGray, fontSize = 13.sp)
+            }
+        } else {
+            VicoColumnChart(
+                valores = top.map { it.cant_veces },
+                nombres = top.map { it.nombre },
+                color = AccentOrange
+            )
+            Spacer(Modifier.height(12.dp))
+            top.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Box(Modifier.size(10.dp).clip(RoundedCornerShape(3.dp)).background(AccentOrange))
+                        Spacer(Modifier.width(8.dp))
+                        Text(item.nombre, color = TextLight, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Text("x${item.cant_veces}", color = AccentOrange, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun VicoColumnChart(
+    valores: List<Number>,
+    nombres: List<String>,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    if (valores.isEmpty()) {
+        Box(modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
+            Text("Sin datos", color = TextGray, fontSize = 13.sp)
+        }
+        return
+    }
+    val modelProducer = remember { CartesianChartModelProducer() }
+    LaunchedEffect(valores) {
+        modelProducer.runTransaction {
+            columnSeries {
+                series(valores)
+            }
+        }
+    }
+    CartesianChartHost(
+        chart = rememberCartesianChart(
+            rememberColumnCartesianLayer(
+                columnProvider = ColumnCartesianLayer.ColumnProvider.series(
+                    rememberLineComponent(fill = fill(color), thickness = 18.dp)
+                )
+            ),
+            startAxis = VerticalAxis.rememberStart(),
+            bottomAxis = HorizontalAxis.rememberBottom(
+                valueFormatter = CartesianValueFormatter { _, value, _ ->
+                    nombres.getOrNull(value.roundToInt())?.let { if (it.isNotEmpty()) it.take(10) else "·" } ?: "·"
+                }
+            )
+        ),
+        modelProducer = modelProducer,
+        modifier = modifier.fillMaxWidth()
+    )
 }
 

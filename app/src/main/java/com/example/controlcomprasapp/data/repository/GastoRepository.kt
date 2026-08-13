@@ -40,6 +40,9 @@ class GastoRepository(private val dataSource: GastoDataSource) {
     fun inicializarGastosFijosDelMes(mes: Int, anio: Int) =
         dataSource.inicializarGastosFijosDelMes(mes, anio)
 
+    fun copiarGastosFijosDelMesAnterior(mes: Int, anio: Int): Int =
+        dataSource.copiarGastosFijosDelMesAnterior(mes, anio)
+
     fun obtenerIngresosDelMes(mes: Int, anio: Int): List<Ingreso> =
         dataSource.obtenerIngresosDelMes(mes, anio)
 

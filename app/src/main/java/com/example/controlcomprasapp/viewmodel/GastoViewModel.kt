@@ -42,15 +42,22 @@ class GastoViewModel (private val repository: GastoRepository) : ViewModel() {
     fun cargarMes(mes: Int, anio: Int) {
         mesSeleccionado = mes
         anioSeleccionado = anio
-        repository.inicializarGastosFijosDelMes(mes, anio)
+        if (!esMesPasado(mes, anio)) {
+            repository.inicializarGastosFijosDelMes(mes, anio)
+        }
         gastosFijos = repository.obtenerGastosFijos()
         gastosDelMes = repository.obtenerGastosDelMes(mes, anio)
         ingresosDelMes = repository.obtenerIngresosDelMes(mes, anio)
     }
 
+    private fun esMesPasado(mes: Int, anio: Int): Boolean =
+        LocalDate.of(anio, mes, 1).isBefore(LocalDate.now().withDayOfMonth(1))
+
     fun agregarGastoFijo(nombre: String, monto: Double) {
         repository.insertarGastoFijo(nombre, monto)
-        repository.inicializarGastosFijosDelMes(mesSeleccionado, anioSeleccionado)
+        if (!esMesPasado(mesSeleccionado, anioSeleccionado)) {
+            repository.inicializarGastosFijosDelMes(mesSeleccionado, anioSeleccionado)
+        }
         gastosFijos = repository.obtenerGastosFijos()
         gastosDelMes = repository.obtenerGastosDelMes(mesSeleccionado, anioSeleccionado)
     }
@@ -76,6 +83,12 @@ class GastoViewModel (private val repository: GastoRepository) : ViewModel() {
     fun togglePagado(gasto: GastoMensual) {
         repository.actualizarPagadoGasto(gasto.id, !gasto.pagado)
         gastosDelMes = repository.obtenerGastosDelMes(mesSeleccionado, anioSeleccionado)
+    }
+
+    fun copiarGastosFijosDelMesAnterior(): Int {
+        val insertados = repository.copiarGastosFijosDelMesAnterior(mesSeleccionado, anioSeleccionado)
+        gastosDelMes = repository.obtenerGastosDelMes(mesSeleccionado, anioSeleccionado)
+        return insertados
     }
 
     fun actualizarMontoGastoMensual(id: Long, nuevoMonto: Double) {
