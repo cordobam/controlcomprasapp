@@ -1,8 +1,6 @@
 package com.example.controlcomprasapp.domain.parser
 
-import android.util.Log
 import com.example.controlcomprasapp.data.local.dto.TicketParseado
-import com.example.controlcomprasapp.domain.model.ItemTicket
 
 interface TicketParser {
 

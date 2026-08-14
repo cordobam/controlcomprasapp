@@ -52,9 +52,15 @@ object OcrProcessor {
                     .filter { it.isNotBlank() }
 
                 if (lineas.isEmpty()) {
-                    // Si el PDF no tiene texto (es una imagen), podrías llamar
-                    // aquí a tu vieja función de bitmap + OCR como plan B.
-                    onResult(listOf("PDF_VACIO_O_ESCANEO"))
+                    // El PDF no tiene capa de texto (escaneado): plan B con OCR
+                    // renderizando la primera pagina a bitmap.
+                    val bitmap = pdfPrimeraPaginaBitmap(context, uri)
+                    if (bitmap != null) {
+                        val image = InputImage.fromBitmap(bitmap, 0)
+                        procesarConMLKit(image, onResult)
+                    } else {
+                        onResult(listOf("PDF_VACIO_O_ESCANEO"))
+                    }
                 } else {
                     onResult(lineas)
                 }

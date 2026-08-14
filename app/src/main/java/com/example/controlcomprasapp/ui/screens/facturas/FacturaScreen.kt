@@ -37,10 +37,15 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -81,6 +86,10 @@ fun FacturaScreen(
     val imagenUri = imagenUriString?.let { Uri.parse(it) }
     val items = viewModel.items
     val descuentos = viewModel.descuentos
+    val isEscaneando = viewModel.isEscaneando
+
+    var editandoLocal by rememberSaveable { mutableStateOf(false) }
+    var localTemp by rememberSaveable { mutableStateOf("") }
 
     val backgroundDark = Color(0xFF111318)
     val surfaceDark = Color(0xFF1A1D24)
@@ -88,6 +97,11 @@ fun FacturaScreen(
     val accentBlue = Color(0xFF4A9EFF)
 
     val hayDatos = viewModel.local.isNotBlank() || viewModel.fecha != null
+
+    // Muestra mensajes de resultado/error del escaneo
+    LaunchedEffect(viewModel.mensaje) {
+        viewModel.mensaje?.let { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
+    }
 
     // Launchers
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {}
@@ -180,7 +194,8 @@ fun FacturaScreen(
                     icon = Icons.Outlined.Search,
                     label = "Escanear",
                     modifier = Modifier.weight(1f),
-                    enabled = imagenUri != null
+                    enabled = imagenUri != null && !isEscaneando,
+                    loading = isEscaneando
                 ) { imagenUri?.let { viewModel.procesarUri(context, it) } }
             }
 
@@ -194,7 +209,24 @@ fun FacturaScreen(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                MetaRow("Local", viewModel.local.ifBlank { "—" })
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            localTemp = viewModel.local
+                            editandoLocal = true
+                        }
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Local", color = Color.Gray, fontSize = 12.sp)
+                    Text(
+                        viewModel.local.ifBlank { "—" },
+                        color = accentBlue,
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
                 HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
                 MetaRow("Fecha", viewModel.fecha ?: "—")
                 HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
@@ -261,6 +293,33 @@ fun FacturaScreen(
             }
         }
     }
+
+    if (editandoLocal) {
+        AlertDialog(
+            onDismissRequest = { editandoLocal = false },
+            containerColor = surfaceDark,
+            title = { Text("Editar local", color = Color.White) },
+            text = {
+                OutlinedTextField(
+                    value = localTemp,
+                    onValueChange = { localTemp = it },
+                    label = { Text("Nombre del local", color = Color.Gray) },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.local = localTemp.trim()
+                        editandoLocal = false
+                    }
+                ) { Text("Guardar", color = accentBlue) }
+            },
+            dismissButton = {
+                TextButton(onClick = { editandoLocal = false }) { Text("Cancelar", color = Color.Gray) }
+            }
+        )
+    }
 }
 
 // ── Botón ícono compacto ──────────────────────────────────────────────────────
@@ -272,6 +331,7 @@ private fun IconActionButton(
     modifier: Modifier = Modifier,
     isPrimary: Boolean = false,
     enabled: Boolean = true,
+    loading: Boolean = false,
     onClick: () -> Unit
 ) {
     val bgColor = if (isPrimary) Color(0xFF1C2A3A) else Color(0xFF1A1D24)
@@ -297,7 +357,15 @@ private fun IconActionButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Icon(icon, contentDescription = label, tint = iconTint, modifier = Modifier.size(20.dp))
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color(0xFF4A9EFF),
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(icon, contentDescription = label, tint = iconTint, modifier = Modifier.size(20.dp))
+        }
         Text(label, fontSize = 10.sp, color = labelColor)
     }
 }
