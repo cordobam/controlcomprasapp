@@ -12,6 +12,7 @@ import com.example.controlcomprasapp.data.repository.TicketRepository
 import com.example.controlcomprasapp.domain.model.ItemTicket
 import com.example.controlcomprasapp.domain.parser.TicketParser
 import com.example.controlcomprasapp.ocr.OcrProcessor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -32,6 +33,11 @@ class FacturaViewModel(
 
     var descuentos by mutableStateOf<List<Descuentos>>(emptyList())
 
+    var isEscaneando by mutableStateOf(false)
+        private set
+    var mensaje by mutableStateOf<String?>(null)
+        private set
+
     // agregar nuevo parser en caso de agregar factura de otro lugar
     fun guardar() : Boolean{
         val fechaNormalizada = normalizarFecha(fecha)
@@ -48,25 +54,53 @@ class FacturaViewModel(
 
         val nombreArchivo = obtenerNombreArchivo(context, uri)
 
-        OcrProcessor.leerTextoUniversalOCR(context, uri) { lineas ->
+        limpiar()
+        mensaje = null
+        isEscaneando = true
 
-            val textoCompleto = lineas.joinToString("\n")
-
-            val parser = parserManager.obtenerParse(textoCompleto)
-
-            if (parser != null) {
-
-                val ticket = parser.parser(lineas)
-
-                fecha = ticket.fecha
-                local = ticket.local
-                items = ticket.items
-                archivo = nombreArchivo
-                descuentos = ticket.descuentos
-
-            } else {
-                items = emptyList()
+        viewModelScope.launch(Dispatchers.IO) {
+            OcrProcessor.leerTextoUniversalOCR(context, uri) { lineas ->
+                viewModelScope.launch(Dispatchers.Main) {
+                    when {
+                        lineas == listOf("PDF_VACIO_O_ESCANEO") ->
+                            mensaje = "El PDF parece escaneado y no se pudo leer."
+                        lineas == listOf("ERROR_OCR") ->
+                            mensaje = "Error de OCR al leer la imagen."
+                        lineas == listOf("ERROR_LECTURA_PDF") ->
+                            mensaje = "Error al leer el PDF."
+                        lineas == listOf("ERROR_CARGA_IMAGEN") ->
+                            mensaje = "No se pudo cargar la imagen."
+                        else -> {
+                            procesarTextoOCR(lineas)
+                            if (items.isEmpty()) {
+                                mensaje = "No se detectaron ítems."
+                            }
+                        }
+                    }
+                    archivo = nombreArchivo
+                    isEscaneando = false
+                }
             }
+        }
+    }
+
+    fun procesarTextoOCR(lineas: List<String>) {
+        val textoCompleto = lineas.joinToString("\n")
+
+        val parser = parserManager.obtenerParse(textoCompleto)
+
+        if (parser != null) {
+
+            val ticket = parser.parser(lineas)
+
+            fecha = ticket.fecha
+            local = ticket.local
+            items = ticket.items
+            descuentos = ticket.descuentos
+
+        } else {
+            items = emptyList()
+            descuentos = emptyList()
         }
     }
 
