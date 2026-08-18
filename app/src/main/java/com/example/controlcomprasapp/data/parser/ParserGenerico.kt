@@ -28,7 +28,7 @@ class ParserGenerico : TicketParser {
 
         val regexDescuento = Regex("""(.+?)\s+(-\d+[.,]\d+)""")
         val regexCantidadPrecio = Regex("""(\d+)\s*[xX]\s*([\d,.]+)""")
-        val regexPrecioFinal = Regex("""\d+[.,]\d{2}$""")
+        val regexPrecioFinal = Regex("""\d[\d.,]*,\d{2}$""")
 
         var dentroSeccionDescuentos = false
         var seccionActual = "General"
@@ -78,7 +78,7 @@ class ParserGenerico : TicketParser {
             val matchCantidad = regexCantidadPrecio.find(limpia)
             if (matchCantidad != null) {
                 cantidad = matchCantidad.groupValues[1].toIntOrNull() ?: 1
-                precio = matchCantidad.groupValues[2].replace(",", ".").toDoubleOrNull()
+                precio = ParserUtils.parsearMonto(matchCantidad.groupValues[2])
                 val parteAntes = limpia.substring(0, matchCantidad.range.first).trim()
                 if (ParserUtils.esNombrePotencial(parteAntes)) {
                     nombreEncontrado = parteAntes
@@ -86,7 +86,7 @@ class ParserGenerico : TicketParser {
             } else {
                 val matchFinal = regexPrecioFinal.find(limpia)
                 if (matchFinal != null) {
-                    precio = matchFinal.value.replace(",", ".").toDoubleOrNull()
+                    precio = ParserUtils.parsearMonto(matchFinal.value)
                     val parteAntes = limpia.substring(0, matchFinal.range.first).replace("$", "").trim()
                     if (ParserUtils.esNombrePotencial(parteAntes)) {
                         nombreEncontrado = parteAntes

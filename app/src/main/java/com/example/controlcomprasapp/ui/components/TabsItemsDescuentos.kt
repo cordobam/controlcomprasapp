@@ -164,6 +164,16 @@ fun ItemFila(item: ItemTicket, surfaceDark: Color, borderDark: Color) {
         Column(modifier = Modifier.weight(1f)) {
             Text(item.nombre, color = Color(0xFFDDDDDD), fontSize = 13.sp, fontWeight = FontWeight.Medium)
             Text("x${item.cantidad}  ·  unit: $${item.precioUnitario}", color = Color(0xFF666666), fontSize = 11.sp)
+            if (item.cuotasTotal != null) {
+                Text(
+                    buildString {
+                        item.fechaConsumo?.let { append("$it  ·  ") }
+                        append("cuota ${item.cuotaActual}/${item.cuotasTotal}")
+                    },
+                    color = Color(0xFF4A9EFF),
+                    fontSize = 11.sp
+                )
+            }
         }
         Text("$${item.total}", color = Color(0xFFCCCCCC), fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }

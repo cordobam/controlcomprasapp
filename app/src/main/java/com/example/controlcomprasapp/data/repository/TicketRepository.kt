@@ -23,7 +23,11 @@ class TicketRepository(
         nombreArchivo: String,
         items: List<ItemTicket>,
         descuentos: List<Descuentos>,
-        esManual: Boolean = false
+        esManual: Boolean = false,
+        tipo: String = "COMPRA",
+        banco: String? = null,
+        marca: String? = null,
+        fechaVencimiento: String? = null
     ): Boolean{
 
         val archivoId: Long
@@ -51,7 +55,11 @@ class TicketRepository(
             Tickets(
                 fecha = fecha,
                 id_local = localId,
-                id_archivo = archivoId
+                id_archivo = archivoId,
+                tipo = tipo,
+                banco = banco,
+                marca = marca,
+                fechaVencimiento = fechaVencimiento
             )
         )
 

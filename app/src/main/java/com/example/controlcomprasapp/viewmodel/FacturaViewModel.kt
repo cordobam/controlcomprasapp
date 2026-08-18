@@ -31,6 +31,11 @@ class FacturaViewModel(
     var local by mutableStateOf("")
     var archivo by mutableStateOf("")
 
+    var tipo by mutableStateOf("COMPRA")
+    var banco by mutableStateOf<String?>(null)
+    var marca by mutableStateOf<String?>(null)
+    var fechaVencimiento by mutableStateOf<String?>(null)
+
     var descuentos by mutableStateOf<List<Descuentos>>(emptyList())
 
     var isEscaneando by mutableStateOf(false)
@@ -41,13 +46,18 @@ class FacturaViewModel(
     // agregar nuevo parser en caso de agregar factura de otro lugar
     fun guardar() : Boolean{
         val fechaNormalizada = normalizarFecha(fecha)
-        return repo.guardarTicketCompleto(
+return repo.guardarTicketCompleto(
             fecha = fechaNormalizada ?: "",
             nombreLocal = local,
             nombreArchivo = archivo,
             items = items,
-            descuentos=descuentos,
-            esManual = archivo.isBlank())
+            descuentos = descuentos,
+            esManual = archivo.isBlank(),
+            tipo = tipo,
+            banco = banco,
+            marca = marca,
+fechaVencimiento = fechaVencimiento
+        )
     }
 
     fun procesarUri(context: Context, uri: Uri) {
@@ -97,11 +107,23 @@ class FacturaViewModel(
             local = ticket.local
             items = ticket.items
             descuentos = ticket.descuentos
+            tipo = ticket.tipo
+            banco = ticket.banco
+            marca = ticket.marca
+            fechaVencimiento = ticket.fechaVencimiento
 
         } else {
             items = emptyList()
             descuentos = emptyList()
+            resetearCamposTarjeta()
         }
+    }
+
+    private fun resetearCamposTarjeta() {
+        tipo = "COMPRA"
+        banco = null
+        marca = null
+        fechaVencimiento = null
     }
 
     fun obtenerNombreArchivo(context: Context, uri: Uri): String {
@@ -164,6 +186,7 @@ class FacturaViewModel(
         fecha = null
         local = ""
         archivo = ""
+        resetearCamposTarjeta()
     }
 
     fun normalizarFecha(fecha:String?): String?{
