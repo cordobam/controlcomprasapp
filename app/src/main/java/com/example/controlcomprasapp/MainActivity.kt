@@ -12,6 +12,7 @@ import com.example.controlcomprasapp.ui.theme.ControlcomprasappTheme
 import com.example.controlcomprasapp.data.local.datasource.TicketLocalDataSource
 import com.example.controlcomprasapp.data.parser.CarrefourParser
 import com.example.controlcomprasapp.data.parser.ParserGenerico
+import com.example.controlcomprasapp.data.parser.ParserResumenTarjeta
 import com.example.controlcomprasapp.data.repository.TicketRepository
 import com.example.controlcomprasapp.domain.parser.ParserManager
 import com.example.controlcomprasapp.ui.navegation.AppNavigation
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
             val repo = TicketRepository(dataSource, localDataSource, archivoDataSource, descuentosDataSource )
 
-            val parseManager = ParserManager(listOf(CarrefourParser(), ParserGenerico()))
+            val parseManager = ParserManager(listOf(CarrefourParser(), ParserResumenTarjeta(), ParserGenerico()))
 
             val factory = FacturaViewModelFactory(repo, parseManager)
 

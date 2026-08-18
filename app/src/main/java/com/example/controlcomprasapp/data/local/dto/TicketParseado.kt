@@ -8,5 +8,9 @@ data class TicketParseado(
     val local: String,
     val archivo: String,
     val items: List<ItemTicket>,
-    val descuentos: List<Descuentos>
+    val descuentos: List<Descuentos>,
+    val tipo: String = "COMPRA",
+    val banco: String? = null,
+    val marca: String? = null,
+    val fechaVencimiento: String? = null
 )

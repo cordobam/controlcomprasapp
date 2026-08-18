@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class DbHelper(context: Context) :
-    SQLiteOpenHelper(context, "tickets.db", null, 1) {
+    SQLiteOpenHelper(context, "tickets.db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase) {
         val createTableTicket = """
@@ -14,6 +14,10 @@ class DbHelper(context: Context) :
                 fecha TEXT,
                 id_local INTEGER,
                 id_archivo INTEGER,
+                tipo TEXT NOT NULL DEFAULT 'COMPRA',
+                banco TEXT,
+                marca TEXT,
+                fecha_vencimiento TEXT,
                 FOREIGN KEY(id_local) REFERENCES locales(id),
                 FOREIGN KEY(id_archivo) REFERENCES archivos(id)
             )""".trimIndent()
@@ -27,6 +31,9 @@ class DbHelper(context: Context) :
                 precio REAL,
                 total REAL,
                 seccion TEXT,
+                fecha_consumo TEXT,
+                cuotas_total INTEGER,
+                cuota_actual INTEGER,
                 FOREIGN KEY(ticket_id) REFERENCES ticket(id)
             )""".trimIndent()
 
@@ -94,7 +101,14 @@ class DbHelper(context: Context) :
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldV: Int, newV: Int) {
-        db.execSQL("DROP TABLE IF EXISTS ticket_item")
-        onCreate(db)
+        if (oldV < 2) {
+            db.execSQL("ALTER TABLE ticket ADD COLUMN tipo TEXT NOT NULL DEFAULT 'COMPRA'")
+            db.execSQL("ALTER TABLE ticket ADD COLUMN banco TEXT")
+            db.execSQL("ALTER TABLE ticket ADD COLUMN marca TEXT")
+            db.execSQL("ALTER TABLE ticket ADD COLUMN fecha_vencimiento TEXT")
+            db.execSQL("ALTER TABLE ticket_item ADD COLUMN fecha_consumo TEXT")
+            db.execSQL("ALTER TABLE ticket_item ADD COLUMN cuotas_total INTEGER")
+            db.execSQL("ALTER TABLE ticket_item ADD COLUMN cuota_actual INTEGER")
+        }
     }
 }

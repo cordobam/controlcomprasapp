@@ -17,6 +17,10 @@ class TicketLocalDataSource(context: Context) {
             put("fecha", ticket.fecha)
             put("id_local", ticket.id_local)
             put("id_archivo", ticket.id_archivo)
+            put("tipo", ticket.tipo)
+            ticket.banco?.let { put("banco", it) }
+            ticket.marca?.let { put("marca", it) }
+            ticket.fechaVencimiento?.let { put("fecha_vencimiento", it) }
         }
 
         val ticketId = db.insert("ticket", null, values)
@@ -34,6 +38,9 @@ class TicketLocalDataSource(context: Context) {
                 put("precio", item.precioUnitario)
                 put("total", item.total)
                 put("seccion", item.seccion)
+                item.fechaConsumo?.let { put("fecha_consumo", it) }
+                item.cuotasTotal?.let { put("cuotas_total", it) }
+                item.cuotaActual?.let { put("cuota_actual", it) }
             }
             db.insert("ticket_item", null, values)
         }
@@ -64,6 +71,9 @@ class TicketLocalDataSource(context: Context) {
         val lista = mutableListOf<ItemTicket>()
 
         while (cursor.moveToNext()) {
+            val fechaConsumoIdx = cursor.getColumnIndex("fecha_consumo")
+            val cuotasTotalIdx = cursor.getColumnIndex("cuotas_total")
+            val cuotaActualIdx = cursor.getColumnIndex("cuota_actual")
             lista.add(
                 ItemTicket(
                     ticket_id = cursor.getInt(cursor.getColumnIndexOrThrow("ticket_id")),
@@ -71,7 +81,10 @@ class TicketLocalDataSource(context: Context) {
                     cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("cantidad")),
                     precioUnitario = cursor.getDouble(cursor.getColumnIndexOrThrow("precio")),
                     total = cursor.getDouble(cursor.getColumnIndexOrThrow("total")),
-                    seccion = cursor.getString(cursor.getColumnIndexOrThrow("seccion"))
+                    seccion = cursor.getString(cursor.getColumnIndexOrThrow("seccion")),
+                    fechaConsumo = if (fechaConsumoIdx != -1 && !cursor.isNull(fechaConsumoIdx)) cursor.getString(fechaConsumoIdx) else null,
+                    cuotasTotal = if (cuotasTotalIdx != -1 && !cursor.isNull(cuotasTotalIdx)) cursor.getInt(cuotasTotalIdx) else null,
+                    cuotaActual = if (cuotaActualIdx != -1 && !cursor.isNull(cuotaActualIdx)) cursor.getInt(cuotaActualIdx) else null
                 )
             )
         }

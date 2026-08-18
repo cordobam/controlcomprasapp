@@ -231,6 +231,14 @@ fun FacturaScreen(
                 MetaRow("Fecha", viewModel.fecha ?: "—")
                 HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
                 MetaRow("Archivo", viewModel.archivo.ifBlank { "—" })
+                if (viewModel.tipo == "TARJETA") {
+                    HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
+                    MetaRow("Banco", viewModel.banco ?: "—")
+                    HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
+                    MetaRow("Marca", viewModel.marca ?: "—")
+                    HorizontalDivider(color = Color(0xFF222222), thickness = 0.5.dp)
+                    MetaRow("Vencimiento", viewModel.fechaVencimiento ?: "—")
+                }
             }
         }
 
