@@ -25,6 +25,14 @@ class HomeViewModel(private val repository: HomeRepository): ViewModel() {
         private set
     var items_mes by mutableStateOf<List<MesFiltro>>(emptyList())
         private set
+    var totalGastado by mutableStateOf(0)
+        private set
+    var totalAhorrado by mutableStateOf(0)
+        private set
+    var cantidadTickets by mutableStateOf(0)
+        private set
+    var ticketPromedio by mutableStateOf(0)
+        private set
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun loadMeses(){
@@ -35,5 +43,11 @@ class HomeViewModel(private val repository: HomeRepository): ViewModel() {
         items = repository.obtenerDescuentosPorMes(mes, anio)
         items_gastos = repository.obtenerGastoXRubroPorMes(mes, anio)
         items_prductos = repository.obtenerProdcutosMasCompradosPorMes(mes, anio)
+
+        val gastado = repository.obtenerTotalGastadoPorMes(mes, anio)
+        totalGastado = gastado.toInt()
+        totalAhorrado = repository.obtenerTotalAhorradoPorMes(mes, anio).toInt()
+        cantidadTickets = repository.obtenerCantidadTicketsPorMes(mes, anio)
+        ticketPromedio = if (cantidadTickets > 0) (gastado / cantidadTickets).toInt() else 0
     }
 }

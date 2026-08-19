@@ -69,4 +69,22 @@ class HomeRepository(private val HomeDataSoucrce : HomeDataSource) {
             )
         }
     }
+
+    fun obtenerTotalGastadoPorMes(mes: Int, anio: Int): Double {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerTotalGastadoPorMes(mesStr, anioStr)
+    }
+
+    fun obtenerTotalAhorradoPorMes(mes: Int, anio: Int): Double {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerTotalAhorradoPorMes(mesStr, anioStr)
+    }
+
+    fun obtenerCantidadTicketsPorMes(mes: Int, anio: Int): Int {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerCantidadTicketsPorMes(mesStr, anioStr)
+    }
 }

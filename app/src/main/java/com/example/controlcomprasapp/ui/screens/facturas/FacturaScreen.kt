@@ -276,7 +276,10 @@ fun FacturaScreen(
 
             // Botón guardar a la derecha
             Button(
-                onClick = { viewModel.guardar() },
+                onClick = {
+                    val ok = viewModel.guardar()
+                    if (ok) imagenUriString = null
+                },
                 enabled = hayDatos,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = accentBlue,

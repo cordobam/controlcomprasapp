@@ -46,7 +46,7 @@ class FacturaViewModel(
     // agregar nuevo parser en caso de agregar factura de otro lugar
     fun guardar() : Boolean{
         val fechaNormalizada = normalizarFecha(fecha)
-return repo.guardarTicketCompleto(
+        val ok = repo.guardarTicketCompleto(
             fecha = fechaNormalizada ?: "",
             nombreLocal = local,
             nombreArchivo = archivo,
@@ -56,8 +56,11 @@ return repo.guardarTicketCompleto(
             tipo = tipo,
             banco = banco,
             marca = marca,
-fechaVencimiento = fechaVencimiento
+            fechaVencimiento = fechaVencimiento
         )
+        mensaje = if (ok) "Factura guardada" else "El ticket ya fue cargado"
+        if (ok) limpiar()
+        return ok
     }
 
     fun procesarUri(context: Context, uri: Uri) {

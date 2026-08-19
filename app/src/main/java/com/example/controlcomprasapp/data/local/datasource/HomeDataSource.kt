@@ -96,6 +96,36 @@ class HomeDataSource(context: Context) {
         return lista
     }
 
+    fun obtenerTotalGastadoPorMes(mes: String, anio: String): Double {
+        val db = dbHelper.readableDatabase
+        val query = """SELECT SUM(ti.total) as total FROM ticket_item ti INNER JOIN ticket t ON t.id = ti.ticket_id WHERE strftime('%m', t.fecha) = ? AND strftime('%Y', t.fecha) = ?""".trimIndent()
+
+        val cursor = db.rawQuery(query, arrayOf(mes, anio))
+        val total = if (cursor.moveToFirst()) cursor.getDouble(0) else 0.0
+        cursor.close()
+        return total
+    }
+
+    fun obtenerTotalAhorradoPorMes(mes: String, anio: String): Double {
+        val db = dbHelper.readableDatabase
+        val query = """SELECT SUM(d.total) as total FROM descuentos d INNER JOIN ticket t ON t.id = d.ticket_id WHERE strftime('%m', t.fecha) = ? AND strftime('%Y', t.fecha) = ?""".trimIndent()
+
+        val cursor = db.rawQuery(query, arrayOf(mes, anio))
+        val total = if (cursor.moveToFirst()) cursor.getDouble(0) else 0.0
+        cursor.close()
+        return total
+    }
+
+    fun obtenerCantidadTicketsPorMes(mes: String, anio: String): Int {
+        val db = dbHelper.readableDatabase
+        val query = """SELECT COUNT(*) as cantidad FROM ticket t WHERE strftime('%m', t.fecha) = ? AND strftime('%Y', t.fecha) = ?""".trimIndent()
+
+        val cursor = db.rawQuery(query, arrayOf(mes, anio))
+        val cantidad = if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        cursor.close()
+        return cantidad
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun generarMeses(cantidad: Int = 3): List<MesFiltro> {
         val hoy = java.time.LocalDate.now()
