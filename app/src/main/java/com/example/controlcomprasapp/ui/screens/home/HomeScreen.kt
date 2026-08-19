@@ -126,8 +126,10 @@ fun HomeScreen(factory: HomeViewModelFactory) {
         }
     }
 
-    val totalGastado = items_gastos.sumOf { it.total.toDouble() }.toInt()
-    val totalAhorrado = items.sumOf { it.total.toDouble() }.toInt()
+    val totalGastado = viewModel.totalGastado
+    val totalAhorrado = viewModel.totalAhorrado
+    val cantidadTickets = viewModel.cantidadTickets
+    val ticketPromedio = viewModel.ticketPromedio
 
     val scrollState = rememberScrollState()
 
@@ -257,13 +259,22 @@ fun HomeScreen(factory: HomeViewModelFactory) {
             }
         }
 
-        // ── MÉTRICAS TOTALES (Vuelven a ser estáticas) ──
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            MetricBox(Modifier.weight(1f), "Total gastado", "$$totalGastado", Color(0xFFEF4444), SurfaceDark)
-            MetricBox(Modifier.weight(1f), "Total ahorrado", "$$totalAhorrado", AccentGreen, SurfaceDark)
+        // ── MÉTRICAS TOTALES (grilla 2x2) ──
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MetricBox(Modifier.weight(1f), "Total gastado", "$$totalGastado", Color(0xFFEF4444), SurfaceDark)
+                MetricBox(Modifier.weight(1f), "Total ahorrado", "$$totalAhorrado", AccentGreen, SurfaceDark)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MetricBox(Modifier.weight(1f), "Compras del mes", "$cantidadTickets", AccentBlue, SurfaceDark)
+                MetricBox(Modifier.weight(1f), "Ticket promedio", "$$ticketPromedio", AccentOrange, SurfaceDark)
+            }
         }
 
         // ── CARRUSEL DE SECCIONES (SectionCard) ──
@@ -429,7 +440,7 @@ fun GraficosCard(
             .clip(RoundedCornerShape(20.dp))
             .background(SurfaceDark)
             .border(1.dp, BorderDark, RoundedCornerShape(20.dp))
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -440,13 +451,13 @@ fun GraficosCard(
             Text("Gráficos del mes", color = TextLight, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
         HorizontalDivider(color = BorderDark, thickness = 1.dp)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
 
         HorizontalPager(
             state = graficosPagerState,
             pageSpacing = 16.dp,
             contentPadding = PaddingValues(horizontal = 0.dp),
-            modifier = Modifier.fillMaxWidth().height(480.dp)
+            modifier = Modifier.fillMaxWidth().height(400.dp)
         ) { page ->
             Box(
                 modifier = Modifier
@@ -461,7 +472,7 @@ fun GraficosCard(
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
