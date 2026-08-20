@@ -168,7 +168,7 @@ fun FacturaScreen(
                         tint = Color(0xFF555555),
                         modifier = Modifier.size(32.dp)
                     )
-                    Text("Sin imagen", color = Color(0xFF555555), fontSize = 13.sp)
+                    Text("Sin imagen", color = Color.White, fontSize = 13.sp)
                 }
             }
 
@@ -219,10 +219,10 @@ fun FacturaScreen(
                         .padding(vertical = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Local", color = Color.Gray, fontSize = 12.sp)
+                    Text("Local", color = Color.White, fontSize = 12.sp)
                     Text(
                         viewModel.local.ifBlank { "—" },
-                        color = accentBlue,
+                        color = Color.White,
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic
                     )
@@ -265,7 +265,7 @@ fun FacturaScreen(
         ) {
             // Total a la izquierda
             Column(modifier = Modifier.weight(1f)) {
-                Text("Total", color = Color(0xFF555555), fontSize = 11.sp)
+                Text("Total", color = Color.White, fontSize = 11.sp)
                 Text(
                     "$${items.sumOf { it.total }}",
                     color = Color.White,
@@ -314,7 +314,7 @@ fun FacturaScreen(
                 OutlinedTextField(
                     value = localTemp,
                     onValueChange = { localTemp = it },
-                    label = { Text("Nombre del local", color = Color.Gray) },
+                    label = { Text("Nombre del local", color = Color.White) },
                     singleLine = true
                 )
             },
@@ -327,7 +327,7 @@ fun FacturaScreen(
                 ) { Text("Guardar", color = accentBlue) }
             },
             dismissButton = {
-                TextButton(onClick = { editandoLocal = false }) { Text("Cancelar", color = Color.Gray) }
+                TextButton(onClick = { editandoLocal = false }) { Text("Cancelar", color = Color.White) }
             }
         )
     }
@@ -352,11 +352,7 @@ private fun IconActionButton(
         isPrimary -> Color(0xFF4A9EFF)
         else -> Color(0xFF888888)
     }
-    val labelColor = when {
-        !enabled -> Color(0xFF333333)
-        isPrimary -> Color(0xFF4A9EFF)
-        else -> Color(0xFFCCCCCC)
-    }
+    val labelColor = Color.White
 
     Column(
         modifier = modifier
@@ -391,7 +387,7 @@ private fun MetaRow(key: String, value: String) {
             .padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(key, color = Color.Gray, fontSize = 12.sp)
-        Text(value, color = Color.LightGray, fontSize = 12.sp, fontStyle = FontStyle.Italic)
+        Text(key, color = Color.White, fontSize = 12.sp)
+        Text(value, color = Color.White, fontSize = 12.sp, fontStyle = FontStyle.Italic)
     }
 }

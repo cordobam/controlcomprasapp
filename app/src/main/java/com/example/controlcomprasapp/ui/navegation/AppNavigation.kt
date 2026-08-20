@@ -53,19 +53,19 @@ fun AppNavigation(
                     selected = false,
                     onClick = { navController.navigate(Screen.Home.route) },
                     icon = { Icon(Icons.Default.Home, null) },
-                    label = { Text("Inicio") }
+                    label = { Text("Home") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navController.navigate(Screen.NuevaFactura.route) },
                     icon = { Icon(Icons.Default.AddCircle, null) },
-                    label = { Text("Facturas") }
+                    label = { Text("Cargar") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navController.navigate(Screen.Productos.route) },
                     icon = { Icon(Icons.Default.List, null) },
-                    label = { Text("Productos") }
+                    label = { Text("Buscar") }
                 )
                 NavigationBarItem(
                     selected = false,

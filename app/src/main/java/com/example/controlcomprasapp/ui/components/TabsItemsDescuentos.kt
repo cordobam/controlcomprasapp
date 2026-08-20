@@ -49,7 +49,6 @@ fun TabsItemsDescuentos(
 ) {
     val surfaceDark = Color(0xFF1A1D24)
     val borderDark = Color(0xFF2A2D35)
-    val accentBlue = Color(0xFF4A9EFF)
 
     var tabSeleccionado by rememberSaveable { mutableStateOf(0) }
 
@@ -81,7 +80,7 @@ fun TabsItemsDescuentos(
                     ) {
                         Text(
                             label,
-                            color = if (selected) accentBlue else Color(0xFF888888),
+                            color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
                         )
@@ -95,7 +94,7 @@ fun TabsItemsDescuentos(
                             ) {
                                 Text(
                                     "$count",
-                                    color = if (selected) accentBlue else Color(0xFF555555),
+                                    color = Color.White,
                                     fontSize = 11.sp
                                 )
                             }
@@ -124,7 +123,7 @@ fun TabsItemsDescuentos(
                     )
                     Text(
                         if (tabSeleccionado == 0) "Sin ítems escaneados" else "Sin descuentos detectados",
-                        color = Color(0xFF444444),
+                        color = Color.White,
                         fontSize = 13.sp
                     )
                 }
@@ -162,20 +161,20 @@ fun ItemFila(item: ItemTicket, surfaceDark: Color, borderDark: Color) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.nombre, color = Color(0xFFDDDDDD), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-            Text("x${item.cantidad}  ·  unit: $${item.precioUnitario}", color = Color(0xFF666666), fontSize = 11.sp)
+            Text(item.nombre, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            Text("x${item.cantidad}  ·  unit: $${item.precioUnitario}", color = Color.White, fontSize = 11.sp)
             if (item.cuotasTotal != null) {
                 Text(
                     buildString {
                         item.fechaConsumo?.let { append("$it  ·  ") }
                         append("cuota ${item.cuotaActual}/${item.cuotasTotal}")
                     },
-                    color = Color(0xFF4A9EFF),
+                    color = Color.White,
                     fontSize = 11.sp
                 )
             }
         }
-        Text("$${item.total}", color = Color(0xFFCCCCCC), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text("$${item.total}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -191,7 +190,7 @@ fun DescuentoFila(descuento: Descuentos) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(descuento.nombre, color = Color(0xFFAAAAAA), fontSize = 13.sp, modifier = Modifier.weight(1f))
-        Text("-$${descuento.total}", color = Color(0xFF3DBA6E), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(descuento.nombre, color = Color.White, fontSize = 13.sp, modifier = Modifier.weight(1f))
+        Text("-$${descuento.total}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }

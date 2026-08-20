@@ -49,7 +49,7 @@ fun NuevaFacturaScreen(navController: NavController) {
 
         Text(
             "¿Cómo querés cargarla?",
-            color = Color(0xFF666666),
+            color = Color.White,
             fontSize = 13.sp
         )
 
@@ -72,7 +72,7 @@ fun NuevaFacturaScreen(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFF1E1E1E))
-            Text("o", color = Color(0xFF333333), fontSize = 11.sp)
+            Text("o", color = Color.White, fontSize = 11.sp)
             HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFF1E1E1E))
         }
 
@@ -135,7 +135,7 @@ private fun EntryCard(
                 badge?.let {
                     Text(
                         it,
-                        color = badgeColor,
+                        color = Color.White,
                         fontSize = 9.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
@@ -144,10 +144,10 @@ private fun EntryCard(
                     )
                 }
             }
-            Text(description, color = Color(0xFF555555), fontSize = 11.sp, lineHeight = 15.sp)
+            Text(description, color = Color.White, fontSize = 11.sp, lineHeight = 15.sp)
         }
 
         // Flecha
-        Text("›", color = Color(0xFF333333), fontSize = 20.sp)
+        Text("›", color = Color.White, fontSize = 20.sp)
     }
 }
