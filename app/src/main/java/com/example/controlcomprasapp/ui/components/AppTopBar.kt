@@ -38,7 +38,7 @@ fun TopBar(navController: NavController) {
             ) {
 
                 DropdownMenuItem(
-                    text = { Text("Página Principal") },
+                    text = { Text("Home") },
                     onClick = {
                         expanded = false
                         navController.navigate(Screen.Home.route)
@@ -46,7 +46,7 @@ fun TopBar(navController: NavController) {
                 )
 
                 DropdownMenuItem(
-                    text = { Text("Carga de Facturas") },
+                    text = { Text("Cargar") },
                     onClick = {
                         expanded = false
                         navController.navigate(Screen.Facturas.route)
@@ -54,10 +54,18 @@ fun TopBar(navController: NavController) {
                 )
 
                 DropdownMenuItem(
-                    text = { Text("Productos Cargados") },
+                    text = { Text("Buscar") },
                     onClick = {
                         expanded = false
                         navController.navigate(Screen.Productos.route)
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text("Gastos") },
+                    onClick = {
+                        expanded = false
+                        navController.navigate(Screen.Gastos.route)
                     }
                 )
             }

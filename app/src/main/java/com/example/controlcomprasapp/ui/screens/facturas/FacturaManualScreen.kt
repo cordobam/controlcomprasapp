@@ -81,7 +81,7 @@ fun FacturaManualScreen(
         ) {
             Text(
                 "← Volver",
-                color = Color(0xFF555555),
+                color = Color.White,
                 fontSize = 13.sp,
                 modifier = Modifier.clickable { navController.popBackStack() }
             )
@@ -95,7 +95,7 @@ fun FacturaManualScreen(
             )
             Text(
                 "borrador",
-                color = Color(0xFF333333),
+                color = Color.White,
                 fontSize = 11.sp
             )
         }
@@ -118,7 +118,7 @@ fun FacturaManualScreen(
                 ) {
                     Text(
                         label,
-                        color = if (isActive) accentBlue else Color(0xFF555555),
+                        color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = if (isActive) FontWeight.Medium else FontWeight.Normal
                     )
@@ -157,7 +157,7 @@ fun FacturaManualScreen(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier.weight(1f),
                 border = BorderStroke(0.5.dp, borderDark),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF666666))
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
             ) { Text("Descartar", fontSize = 13.sp) }
 
             Button(
@@ -232,12 +232,12 @@ private fun TabItems(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(item.nombre, color = Color(0xFFCCCCCC), fontSize = 13.sp, modifier = Modifier.weight(1f))
-                    Text("$${item.precioUnitario}", color = accentBlue, fontSize = 13.sp)
+                    Text(item.nombre, color = Color.White, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                    Text("$${item.precioUnitario}", color = Color.White, fontSize = 13.sp)
                     Spacer(Modifier.width(12.dp))
                     Text(
                         "×",
-                        color = Color(0xFF444444),
+                        color = Color.White,
                         fontSize = 16.sp,
                         modifier = Modifier.clickable { viewModel.eliminarItem(item) }
                     )
@@ -260,8 +260,8 @@ private fun TabItems(
                             .clip(CircleShape)
                             .border(0.5.dp, Color(0xFF2A2D35), CircleShape),
                         contentAlignment = Alignment.Center
-                    ) { Text("+", color = Color(0xFF555555), fontSize = 14.sp) }
-                    Text("Agregar item", color = Color(0xFF555555), fontSize = 13.sp)
+                    ) { Text("+", color = Color.White, fontSize = 14.sp) }
+                    Text("Agregar item", color = Color.White, fontSize = 13.sp)
                 }
             }
         }
@@ -275,10 +275,10 @@ private fun TabItems(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Total", color = Color(0xFF666666), fontSize = 13.sp)
+            Text("Total", color = Color.White, fontSize = 13.sp)
             Text(
                 "$${viewModel.items.sumOf { it.precioUnitario }}",
-                color = accentBlue,
+                color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -316,11 +316,11 @@ private fun TabItems(
                         )
                         showAddDialog = false
                     }
-                }) { Text("Agregar", color = Color(0xFF4A9EFF)) }
+                }) { Text("Agregar", color = Color.White) }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("Cancelar", color = Color(0xFF555555))
+                    Text("Cancelar", color = Color.White)
                 }
             }
         )
@@ -353,7 +353,7 @@ private fun TabDescuentos(
                     ) {
                         Text(
                             "Sin descuentos cargados",
-                            color = Color(0xFF333333),
+                            color = Color.White,
                             fontSize = 13.sp
                         )
                     }
@@ -370,19 +370,19 @@ private fun TabDescuentos(
                 ) {
                     Text(
                         descuento.nombre,
-                        color = Color(0xFFCCCCCC),
+                        color = Color.White,
                         fontSize = 13.sp,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         "-$${descuento.total}",
-                        color = Color(0xFF4ADE80), // verde para descuentos
+                        color = Color.White,
                         fontSize = 13.sp
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
                         "×",
-                        color = Color(0xFF444444),
+                        color = Color.White,
                         fontSize = 16.sp,
                         modifier = Modifier.clickable {
                             viewModel.eliminarDescuento(descuento)
@@ -408,8 +408,8 @@ private fun TabDescuentos(
                             .clip(CircleShape)
                             .border(0.5.dp, Color(0xFF2A2D35), CircleShape),
                         contentAlignment = Alignment.Center
-                    ) { Text("+", color = Color(0xFF555555), fontSize = 14.sp) }
-                    Text("Agregar descuento", color = Color(0xFF555555), fontSize = 13.sp)
+                    ) { Text("+", color = Color.White, fontSize = 14.sp) }
+                    Text("Agregar descuento", color = Color.White, fontSize = 13.sp)
                 }
             }
         }
@@ -423,10 +423,10 @@ private fun TabDescuentos(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Total descuentos", color = Color(0xFF666666), fontSize = 13.sp)
+            Text("Total descuentos", color = Color.White, fontSize = 13.sp)
             Text(
                 "-$${viewModel.descuentos.sumOf { it.total }}",
-                color = Color(0xFF4ADE80),
+                color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -474,14 +474,14 @@ private fun TabDescuentos(
                             showAddDialog = false
                         }
                     }
-                ) { Text("Agregar", color = Color(0xFF4A9EFF)) }
+                ) { Text("Agregar", color = Color.White) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     nombreDesc = ""
                     totalDesc = ""
                     showAddDialog = false
-                }) { Text("Cancelar", color = Color(0xFF555555)) }
+                }) { Text("Cancelar", color = Color.White) }
             }
         )
     }
@@ -493,7 +493,7 @@ private fun TabDescuentos(
 private fun SectionLabel(text: String) {
     Text(
         text.uppercase(),
-        color = Color(0xFF444444),
+        color = Color.White,
         fontSize = 10.sp,
         letterSpacing = 0.6.sp
     )
@@ -508,7 +508,7 @@ private fun ManualField(
     isNumber: Boolean = false
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, color = Color(0xFF666666), fontSize = 11.sp)
+        Text(label, color = Color.White, fontSize = 11.sp)
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
@@ -516,7 +516,7 @@ private fun ManualField(
                 KeyboardOptions(keyboardType = KeyboardType.Decimal)
             else
                 KeyboardOptions.Default,
-            textStyle = TextStyle(color = Color(0xFFCCCCCC), fontSize = 13.sp),
+            textStyle = TextStyle(color = Color.White, fontSize = 13.sp),
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
@@ -525,7 +525,7 @@ private fun ManualField(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             decorationBox = { inner ->
                 if (value.isEmpty()) {
-                    Text(placeholder, color = Color(0xFF333333), fontSize = 13.sp)
+                    Text(placeholder, color = Color.White, fontSize = 13.sp)
                 }
                 inner()
             }

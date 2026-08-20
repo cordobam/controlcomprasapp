@@ -35,7 +35,7 @@ fun BottomMenu(navController: NavController) {
         NavigationBarItem(
             selected = currentRoute == Screen.Home.route,
             onClick = { navController.navigate(Screen.Home.route) },
-            label = { Text("Inicio", color = TextLight) },
+            label = { Text("Home", color = TextLight) },
             icon = {
                 Icon(
                     Icons.Default.Home,
@@ -49,7 +49,7 @@ fun BottomMenu(navController: NavController) {
         NavigationBarItem(
             selected = currentRoute == Screen.Facturas.route,
             onClick = { navController.navigate(Screen.Facturas.route) },
-            label = { Text("Facturas", color = TextLight) },
+            label = { Text("Cargar", color = TextLight) },
             icon = {
                 Icon(
                     Icons.Default.AddCircle, // Icono de carga
@@ -63,7 +63,7 @@ fun BottomMenu(navController: NavController) {
         NavigationBarItem(
             selected = currentRoute == Screen.Productos.route,
             onClick = { navController.navigate(Screen.Productos.route) },
-            label = { Text("Productos", color = TextLight) },
+            label = { Text("Buscar", color = TextLight) },
             icon = {
                 Icon(
                     Icons.Default.List,

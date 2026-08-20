@@ -193,7 +193,7 @@ fun ProductosScreen(viewModel: ProductViewModel) {
                     )
                     Text(
                         "Aplicá los filtros para ver resultados",
-                        color = Color(0xFF444444),
+                        color = Color.White,
                         fontSize = 13.sp
                     )
                 }
@@ -219,7 +219,7 @@ fun ProductosScreen(viewModel: ProductViewModel) {
                     ) {
                         Text(
                             product.nombre,
-                            color = Color(0xFFDDDDDD),
+                            color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.weight(1f),
@@ -229,7 +229,7 @@ fun ProductosScreen(viewModel: ProductViewModel) {
                         Spacer(Modifier.width(12.dp))
                         Text(
                             "$${product.total}",
-                            color = Color(0xFFCCCCCC),
+                            color = Color.White,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -272,10 +272,10 @@ fun DatePickerFieldDark(
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(label, color = Color(0xFF666666), fontSize = 11.sp)
+            Text(label, color = Color.White, fontSize = 11.sp)
             Text(
                 value.ifBlank { "—" },
-                color = if (value.isBlank()) Color(0xFF444444) else Color(0xFFCCCCCC),
+                color = Color.White,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -306,10 +306,10 @@ fun LocalDropdownDark(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Local", color = Color(0xFF666666), fontSize = 11.sp)
+                Text("Local", color = Color.White, fontSize = 11.sp)
                 Text(
                     selected?.nombre ?: "Todos",
-                    color = if (selected == null) Color(0xFF444444) else Color(0xFFCCCCCC),
+                    color = Color.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -334,7 +334,7 @@ fun LocalDropdownDark(
                     text = {
                         Text(
                             local.nombre,
-                            color = Color(0xFFCCCCCC),
+                            color = Color.White,
                             fontSize = 13.sp
                         )
                     },
