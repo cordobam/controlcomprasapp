@@ -33,6 +33,19 @@ object ParserUtils {
         "ORIENTACION AL CONSUMIDOR", "RESPONSABLE INSCRIPTO", "OTROS"
     )
 
+    private val cargosBanco = listOf(
+        "GES.COB",
+        "GESTION TELEFONICA",
+        "PUNIT",
+        "DB IVA",
+        "COMISION MANTEN",
+        "COMISION",
+        "IVA",
+        "SELLOS",
+        "IMPUESTO PAIS",
+        "PERCEPCION"
+    )
+
     private val prefijosProhibidos = listOf(
         "TOTAL", "SUBTOTAL", "PAGO", "VUELTO", "CAMBIO", "EFECTIVO",
         "TARJETA", "CAJERO", "FECHA", "DESCUENTO", "AHORRO"
@@ -201,7 +214,10 @@ object ParserUtils {
     }
 
     fun parsearConsumo(linea: String): Consumo? {
-        val match = regexConsumo.find(linea.uppercase()) ?: return null
+        val u = linea.uppercase()
+        if (esCargoBanco(u)) return null
+
+        val match = regexConsumo.find(u) ?: return null
         val fechaRaw = match.groupValues[1]
         val nombre = match.groupValues[2]
             .replace(Regex("""^\d{3,}\*?\s+"""), "")
@@ -209,6 +225,10 @@ object ParserUtils {
         val monto = parsearMonto(match.groupValues[3]) ?: return null
         val fecha = convertirFecha(fechaRaw) ?: fechaRaw
         return Consumo(fecha = fecha, nombre = nombre, monto = monto)
+    }
+
+    private fun esCargoBanco(linea: String): Boolean {
+        return cargosBanco.any { linea.contains(it) }
     }
 
     fun parsearCuotas(linea: String): Pair<Int?, Int?>? {
