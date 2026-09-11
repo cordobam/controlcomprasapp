@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,117 +38,80 @@ fun NuevaFacturaScreen(navController: NavController) {
             .fillMaxSize()
             .background(backgroundDark)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Título centrado
         Text(
             "Nueva factura",
             color = Color.White,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Medium
         )
 
-        Text(
-            "¿Cómo querés cargarla?",
-            color = Color.White,
-            fontSize = 13.sp
-        )
+        androidx.compose.foundation.layout.Spacer(Modifier.height(8.dp))
 
-        // ── Opción OCR ──────────────────────────────────────────────────────
-        EntryCard(
-            icon = "📷",
-            iconBg = Color(0xFF1C2A3A),
-            title = "Desde imagen / OCR",
-            description = "Sacá una foto o subí un archivo · el sistema lee los datos automáticamente",
-            badge = "Rápido",
-            badgeColor = accentBlue,
-            borderColor = Color(0xFF1F4068),
-            onClick = { navController.navigate(Screen.Facturas.route) }
-        )
-
-        // ── Divisor ─────────────────────────────────────────────────────────
+        // Botón 1: Escanear factura (Primary)
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFF1E1E1E))
-            Text("o", color = Color.White, fontSize = 11.sp)
-            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFF1E1E1E))
-        }
-
-        // ── Opción Manual ────────────────────────────────────────────────────
-        EntryCard(
-            icon = "✏️",
-            iconBg = surfaceDark,
-            title = "Carga manual",
-            description = "Ingresá local, fecha, items y descuentos a mano",
-            badge = null,
-            badgeColor = Color.Transparent,
-            borderColor = borderDark,
-            onClick = { navController.navigate(Screen.FacturaManual.route) }
-        )
-    }
-}
-
-@Composable
-private fun EntryCard(
-    icon: String,
-    iconBg: Color,
-    title: String,
-    description: String,
-    badge: String?,
-    badgeColor: Color,
-    borderColor: Color,
-    onClick: () -> Unit
-) {
-    val surfaceDark = Color(0xFF1A1D24)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(surfaceDark)
-            .border(0.5.dp, borderColor, RoundedCornerShape(14.dp))
-            .clickable { onClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        // Ícono
-        Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(iconBg),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .height(88.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(accentBlue.copy(alpha = 0.12f))
+                .border(1.5.dp, accentBlue, RoundedCornerShape(16.dp))
+                .clickable { navController.navigate(Screen.Facturas.route) }
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(icon, fontSize = 22.sp)
-        }
-
-        // Texto
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(accentBlue.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
             ) {
-                Text(title, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                badge?.let {
-                    Text(
-                        it,
-                        color = Color.White,
-                        fontSize = 9.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(badgeColor.copy(alpha = 0.15f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
+                Text("📷", fontSize = 24.sp)
             }
-            Text(description, color = Color.White, fontSize = 11.sp, lineHeight = 15.sp)
+            Text(
+                "Escanear factura",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
 
-        // Flecha
-        Text("›", color = Color.White, fontSize = 20.sp)
+        androidx.compose.foundation.layout.Spacer(Modifier.height(16.dp))
+
+        // Botón 2: Cargar manualmente (Secondary)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(88.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(surfaceDark)
+                .border(1.dp, borderDark, RoundedCornerShape(16.dp))
+                .clickable { navController.navigate(Screen.FacturaManual.route) }
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(surfaceDark)
+                    .border(0.5.dp, borderDark, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("✏️", fontSize = 24.sp)
+            }
+            Text(
+                "Cargar manualmente",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
