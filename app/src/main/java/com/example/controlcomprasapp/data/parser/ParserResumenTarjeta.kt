@@ -30,9 +30,11 @@ class ParserResumenTarjeta : TicketParser {
 
         val banco = ParserUtils.detectarBanco(lineas)
         val marca = ParserUtils.detectarMarcaTarjeta(textoCompleto)
-        val fecha = ParserUtils.obtenerFechaCierre(lineas)
-            ?: ParserUtils.obtenerFechaVencimiento(lineas)
-        val fechaVencimiento = ParserUtils.obtenerFechaVencimiento(lineas)
+        
+        val fechaCierre = ParserUtils.obtenerFechaCierreActual(lineas)
+        val fechaVencimiento = ParserUtils.obtenerFechaVencimientoActual(lineas)
+
+        val fecha = listOfNotNull(fechaCierre, fechaVencimiento).maxOrNull()
 
         val items = mutableListOf<ItemTicket>()
 

@@ -162,11 +162,35 @@ object ParserUtils {
     }
 
     fun obtenerFechaVencimiento(lineas: List<String>): String? {
-        return buscarFechaConSenal(lineas, listOf("VENCIMIENTO", "VENCE"))
+        return buscarFechaConSenal(lineas, listOf("VENCIMIENTO", "VENCE", "VTO"))
     }
 
     fun obtenerFechaCierre(lineas: List<String>): String? {
         return buscarFechaConSenal(lineas, listOf("CIERRE", "PERIODO"))
+    }
+
+    fun obtenerFechaVencimientoActual(lineas: List<String>): String? {
+        return buscarFechaConSenalFiltrada(lineas, listOf("VENCIMIENTO", "VENCE", "VTO"), listOf("ANTERIOR", "PROXIMO", "PRÓXIMO"))
+    }
+
+    fun obtenerFechaCierreActual(lineas: List<String>): String? {
+        return buscarFechaConSenalFiltrada(lineas, listOf("CIERRE", "PERIODO"), listOf("ANTERIOR", "PROXIMO", "PRÓXIMO"))
+    }
+
+    private fun buscarFechaConSenalFiltrada(lineas: List<String>, senales: List<String>, excluidas: List<String>): String? {
+        val ventana = 5
+        for (i in lineas.indices) {
+            val l = lineas[i].uppercase()
+            if (senales.any { l.contains(it) }) {
+                if (excluidas.any { l.contains(it) }) continue
+                for (j in i until minOf(i + ventana, lineas.size)) {
+                    val lineaVentana = lineas[j].uppercase()
+                    if (excluidas.any { lineaVentana.contains(it) }) continue
+                    extraerFechaDeLinea(lineaVentana)?.let { return it }
+                }
+            }
+        }
+        return null
     }
 
     fun detectarLocal(lineas: List<String>): String {
