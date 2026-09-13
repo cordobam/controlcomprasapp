@@ -9,16 +9,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,13 +34,19 @@ import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -108,6 +110,10 @@ fun HomeScreen(factory: HomeViewModelFactory) {
     val items = viewModel.items
     val items_gastos = viewModel.items_gastos
     val items_prductos = viewModel.items_prductos
+    val items_gastos_tarjeta = viewModel.items_gastos_tarjeta
+    val items_descuentos_tarjeta = viewModel.items_descuentos_tarjeta
+    val items_productos_tarjeta = viewModel.items_productos_tarjeta
+    val modoTarjeta = viewModel.modoTarjeta
     var expanded by remember { mutableStateOf(false) }
     var mostrarGraficos by remember { mutableStateOf(false) }
 
@@ -130,69 +136,131 @@ fun HomeScreen(factory: HomeViewModelFactory) {
     val totalAhorrado = viewModel.totalAhorrado
     val cantidadTickets = viewModel.cantidadTickets
     val ticketPromedio = viewModel.ticketPromedio
+    val totalTarjeta = viewModel.totalTarjeta
+    val cantidadTarjetas = viewModel.cantidadTarjetas
+    val ticketPromedioTC = if (cantidadTarjetas > 0) (totalTarjeta / cantidadTarjetas).toInt() else 0
+    val totalAhorradoTC = items_descuentos_tarjeta.sumOf { it.total }.toInt()
 
     val scrollState = rememberScrollState()
 
-    // --- DEFINICIÓN DE LAS SECCIONES PARA EL CARRUSEL ---
-    val carouselSections = listOf(
-        // Sección 1: Top Descuentos
-        CarouselSection(
-            titulo = "Top descuentos",
-            icono = Icons.Default.TrendingDown,
-            colorIcono = AccentGreen
-        ) {
-            val maxDescuento = items.maxOfOrNull { kotlin.math.abs(it.total.toFloat()) } ?: 1f
-            items.take(5).forEachIndexed { index, it ->
-                StatRow(
-                    rank = index + 1,
-                    nombre = it.nombre,
-                    valor = "$${it.total}",
-                    porcentajeBarra = if(maxDescuento > 0) kotlin.math.abs(it.total.toFloat()) / maxDescuento else 0f,
-                    colorBarra = AccentGreen.copy(alpha = 0.2f),
-                    colorBarraActiva = AccentGreen,
-                    esVerde = true
-                )
-            }
-        },
-        // Sección 2: Gastos por Rubro
-        CarouselSection(
-            titulo = "Gastos por rubro",
-            icono = Icons.Default.Receipt,
-            colorIcono = AccentBlue
-        ) {
-            val maxGasto = items_gastos.maxOfOrNull { it.total.toFloat() } ?: 1f
-            items_gastos.take(5).forEachIndexed { index, it ->
-                StatRow(
-                    rank = index + 1,
-                    nombre = it.seccion,
-                    valor = "$${it.total}",
-                    porcentajeBarra = if(maxGasto > 0) it.total.toFloat() / maxGasto else 0f,
-                    colorBarra = AccentBlue.copy(alpha = 0.1f),
-                    colorBarraActiva = AccentBlue
-                )
-            }
-        },
-        // Sección 3: Top Productos
-        CarouselSection(
-            titulo = "Top productos",
-            icono = Icons.Default.LocalMall,
-            colorIcono = AccentOrange
-        ) {
-            items_prductos.take(5).forEachIndexed { index, it ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RankBadge(index + 1)
-                        Text(it.nombre, color = TextLight, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+    // --- DEFINICIÓN DE LAS SECCIONES PARA EL CARRUSEL (condicional según modo) ---
+    val carouselSections = if (!modoTarjeta) {
+        // MODO COMPRA
+        listOf(
+            CarouselSection(
+                titulo = "Top descuentos",
+                icono = Icons.Default.TrendingDown,
+                colorIcono = AccentGreen
+            ) {
+                val maxDescuento = items.maxOfOrNull { kotlin.math.abs(it.total.toFloat()) } ?: 1f
+                items.take(5).forEachIndexed { index, it ->
+                    StatRow(
+                        rank = index + 1,
+                        nombre = it.nombre,
+                        valor = "$${it.total}",
+                        porcentajeBarra = if (maxDescuento > 0) kotlin.math.abs(it.total.toFloat()) / maxDescuento else 0f,
+                        colorBarra = AccentGreen.copy(alpha = 0.2f),
+                        colorBarraActiva = AccentGreen,
+                        esVerde = true
+                    )
+                }
+            },
+            CarouselSection(
+                titulo = "Gastos por rubro",
+                icono = Icons.Default.Receipt,
+                colorIcono = AccentBlue
+            ) {
+                val maxGasto = items_gastos.maxOfOrNull { it.total.toFloat() } ?: 1f
+                items_gastos.take(5).forEachIndexed { index, it ->
+                    StatRow(
+                        rank = index + 1,
+                        nombre = it.seccion,
+                        valor = "$${it.total}",
+                        porcentajeBarra = if (maxGasto > 0) it.total.toFloat() / maxGasto else 0f,
+                        colorBarra = AccentBlue.copy(alpha = 0.1f),
+                        colorBarraActiva = AccentBlue
+                    )
+                }
+            },
+            CarouselSection(
+                titulo = "Top productos",
+                icono = Icons.Default.LocalMall,
+                colorIcono = AccentOrange
+            ) {
+                items_prductos.take(5).forEachIndexed { index, it ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RankBadge(index + 1)
+                            Text(it.nombre, color = TextLight, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        }
+                        Text("x${it.cant_veces}", color = TextGray, fontSize = 13.sp)
                     }
-                    Text("x${it.cant_veces}", color = TextGray, fontSize = 13.sp)
                 }
             }
-        }
-    )
+        )
+    } else {
+        // MODO TARJETA
+        listOf(
+            CarouselSection(
+                titulo = "Descuentos TC",
+                icono = Icons.Default.TrendingDown,
+                colorIcono = AccentGreen
+            ) {
+                val maxDescuento = items_descuentos_tarjeta.maxOfOrNull { kotlin.math.abs(it.total.toFloat()) } ?: 1f
+                items_descuentos_tarjeta.take(5).forEachIndexed { index, it ->
+                    StatRow(
+                        rank = index + 1,
+                        nombre = it.nombre,
+                        valor = "$${it.total}",
+                        porcentajeBarra = if (maxDescuento > 0) kotlin.math.abs(it.total.toFloat()) / maxDescuento else 0f,
+                        colorBarra = AccentGreen.copy(alpha = 0.2f),
+                        colorBarraActiva = AccentGreen,
+                        esVerde = true
+                    )
+                }
+            },
+            CarouselSection(
+                titulo = "Gastos TC por rubro",
+                icono = Icons.Default.Receipt,
+                colorIcono = AccentBlue
+            ) {
+                val maxGasto = items_gastos_tarjeta.maxOfOrNull { it.total.toFloat() } ?: 1f
+                items_gastos_tarjeta.take(5).forEachIndexed { index, it ->
+                    StatRow(
+                        rank = index + 1,
+                        nombre = it.seccion,
+                        valor = "$${it.total}",
+                        porcentajeBarra = if (maxGasto > 0) it.total.toFloat() / maxGasto else 0f,
+                        colorBarra = AccentBlue.copy(alpha = 0.1f),
+                        colorBarraActiva = AccentBlue
+                    )
+                }
+            },
+            CarouselSection(
+                titulo = "Top productos TC",
+                icono = Icons.Default.LocalMall,
+                colorIcono = AccentOrange
+            ) {
+                items_productos_tarjeta.take(5).forEachIndexed { index, it ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RankBadge(index + 1)
+                            Text(it.nombre, color = TextLight, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        }
+                        Text("x${it.cant_veces}", color = TextGray, fontSize = 13.sp)
+                    }
+                }
+            }
+        )
+    }
 
     // Estado del Carrusel de Secciones
     val pagerState = rememberPagerState(pageCount = { carouselSections.size })
@@ -206,74 +274,132 @@ fun HomeScreen(factory: HomeViewModelFactory) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // ── HEADER ──
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column {
+            // Título + Dropdown en Row (SpaceBetween)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Resumen del mes",
                     color = TextLight,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = "Estado actual de tus finanzas",
-                    color = TextGray,
-                    fontSize = 14.sp
-                )
-            }
 
-            // 👇 ESTE BOX ES LA CLAVE
-            Box {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1E2028))
-                        .border(0.5.dp, BorderDark, RoundedCornerShape(8.dp))
-                        .clickable { expanded = true }
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = mesSeleccionado?.label ?: "",
-                        color = TextGray,
-                        fontSize = 12.sp
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    meses.forEach { mes ->
-                        DropdownMenuItem(
-                            text = { Text(mes.label) },
-                            onClick = {
-                                mesSeleccionado = mes
-                                expanded = false
-                            }
+                // Dropdown mes
+                Box {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF1E2028))
+                            .border(0.5.dp, BorderDark, RoundedCornerShape(8.dp))
+                            .clickable { expanded = true }
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = mesSeleccionado?.label ?: "",
+                            color = TextGray,
+                            fontSize = 12.sp
                         )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        meses.forEach { mes ->
+                            DropdownMenuItem(
+                                text = { Text(mes.label) },
+                                onClick = {
+                                    mesSeleccionado = mes
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
+
+            // Subtitle
+            Text(
+                text = "Estado actual de tus finanzas",
+                color = TextGray,
+                fontSize = 14.sp
+            )
+
+            // Chips modo: Gasto Mes / Gasto TC
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = !modoTarjeta,
+                    onClick = { viewModel.toggleModoTarjeta() },
+                    label = { Text("Gasto Mes", color = TextLight, fontSize = 12.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = Color(0xFF1E2028),
+                        selectedContainerColor = AccentBlue.copy(alpha = 0.2f),
+                        labelColor = TextLight,
+                        selectedLabelColor = TextLight
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(0.5.dp, BorderDark),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                FilterChip(
+                    selected = modoTarjeta,
+                    onClick = { viewModel.toggleModoTarjeta() },
+                    label = { Text("Gasto TC", color = TextLight, fontSize = 12.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = Color(0xFF1E2028),
+                        selectedContainerColor = AccentBlue.copy(alpha = 0.2f),
+                        labelColor = TextLight,
+                        selectedLabelColor = TextLight
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(0.5.dp, BorderDark),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
         }
 
-        // ── MÉTRICAS TOTALES (grilla 2x2) ──
+        // ── MÉTRICAS TOTALES (grilla 2x2) - CONDICIONAL SEGÚN MODO ──
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                MetricBox(Modifier.weight(1f), "Total gastado", "$$totalGastado", Color(0xFFEF4444), SurfaceDark)
-                MetricBox(Modifier.weight(1f), "Total ahorrado", "$$totalAhorrado", AccentGreen, SurfaceDark)
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                MetricBox(Modifier.weight(1f), "Compras del mes", "$cantidadTickets", AccentBlue, SurfaceDark)
-                MetricBox(Modifier.weight(1f), "Ticket promedio", "$$ticketPromedio", AccentOrange, SurfaceDark)
+            if (!modoTarjeta) {
+                // MODO COMPRA
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    MetricBox(Modifier.weight(1f), "Total gastado", "$$totalGastado", Color(0xFFEF4444), SurfaceDark)
+                    MetricBox(Modifier.weight(1f), "Total ahorrado", "$$totalAhorrado", AccentGreen, SurfaceDark)
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    MetricBox(Modifier.weight(1f), "Compras del mes", "$cantidadTickets", AccentBlue, SurfaceDark)
+                    MetricBox(Modifier.weight(1f), "Ticket promedio", "$$ticketPromedio", AccentOrange, SurfaceDark)
+                }
+            } else {
+                // MODO TARJETA
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    MetricBox(Modifier.weight(1f), "Total TC", "$${"%.0f".format(totalTarjeta)}", AccentBlue, SurfaceDark)
+                    MetricBox(Modifier.weight(1f), "Ahorrado TC", "$$totalAhorradoTC", AccentGreen, SurfaceDark)
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    MetricBox(Modifier.weight(1f), "Resúmenes TC", "$cantidadTarjetas", AccentOrange, SurfaceDark)
+                    MetricBox(Modifier.weight(1f), "Promedio TC", "$$ticketPromedioTC", AccentOrange, SurfaceDark)
+                }
             }
         }
 
@@ -285,7 +411,6 @@ fun HomeScreen(factory: HomeViewModelFactory) {
                 pageSpacing = 16.dp
             ) { page ->
                 val section = carouselSections[page]
-                // Reutilizamos SectionCard pero dentro del carrusel
                 SectionCard(
                     titulo = section.titulo,
                     icono = section.icono,
@@ -318,9 +443,9 @@ fun HomeScreen(factory: HomeViewModelFactory) {
         // ── CARD DE GRÁFICOS (visible al tocar "Ver gráfico") ──
         if (mostrarGraficos) {
             GraficosCard(
-                descuentos = items,
-                gastos = items_gastos,
-                productos = items_prductos
+                descuentos = if (!modoTarjeta) items else items_descuentos_tarjeta,
+                gastos = if (!modoTarjeta) items_gastos else items_gastos_tarjeta,
+                productos = if (!modoTarjeta) items_prductos else items_productos_tarjeta
             )
         }
 
@@ -328,7 +453,7 @@ fun HomeScreen(factory: HomeViewModelFactory) {
     }
 }
 
-// --- COMPONENTES AUXILIARES (Ligeramente retocados para el look pro clara) ---
+// --- COMPONENTES AUXILIARES ---
 
 @Composable
 fun MetricBox(modifier: Modifier, label: String, value: String, colorValue: Color, bgColor: Color) {
@@ -349,7 +474,7 @@ fun SectionCard(titulo: String, icono: ImageVector, colorIcono: Color, surfaceCo
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp) // Altura fija para que todas las cards del carrusel midan lo mismo
+            .height(300.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(surfaceColor)
             .border(1.dp, BorderDark, RoundedCornerShape(20.dp))
@@ -375,7 +500,7 @@ fun SectionCard(titulo: String, icono: ImageVector, colorIcono: Color, surfaceCo
             }
         }
         HorizontalDivider(color = BorderDark, thickness = 1.dp)
-        Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) { // Scroll interno si hay muchos items
+        Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
             content()
         }
     }
@@ -655,4 +780,3 @@ fun VicoColumnChart(
         modifier = modifier.fillMaxWidth()
     )
 }
-
