@@ -6,6 +6,7 @@ import com.example.controlcomprasapp.data.local.datasource.HomeDataSource
 import com.example.controlcomprasapp.data.local.datasource.MesFiltro
 import com.example.controlcomprasapp.data.local.datasource.ProductFilter
 import com.example.controlcomprasapp.data.local.datasource.ProductoUI
+import com.example.controlcomprasapp.data.local.datasource.TicketTarjetaResumen
 import com.example.controlcomprasapp.data.local.datasource.TipoProducto
 import com.example.controlcomprasapp.data.local.dto.DescuentosDTO
 import com.example.controlcomprasapp.data.local.dto.GastoMensualDTO
@@ -86,5 +87,68 @@ class HomeRepository(private val HomeDataSoucrce : HomeDataSource) {
         val mesStr = mes.toString().padStart(2, '0')
         val anioStr = anio.toString()
         return HomeDataSoucrce.obtenerCantidadTicketsPorMes(mesStr, anioStr)
+    }
+
+    // ===== TARJETA WRAPPERS =====
+
+    fun obtenerGastoTarjetaXRubroPorMes(mes: Int, anio: Int): List<ItemTicketDTO> {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerGastoTarjetaXRubro(mesStr, anioStr).map {
+            ItemTicketDTO(
+                seccion = it.seccion,
+                total = it.total
+            )
+        }
+    }
+
+    fun obtenerTotalTarjetaPorMes(mes: Int, anio: Int): Double {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerTotalTarjetaPorMes(mesStr, anioStr)
+    }
+
+    fun obtenerCantidadTicketsTarjetaPorMes(mes: Int, anio: Int): Int {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerCantidadTicketsTarjetaPorMes(mesStr, anioStr)
+    }
+
+    fun obtenerDescuentosTarjetaPorMes(mes: Int, anio: Int): List<DescuentosDTO> {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerDescuentosTarjetaPorMes(mesStr, anioStr).map {
+            DescuentosDTO(
+                nombre = it.nombre,
+                fecha = it.fecha,
+                total = it.total
+            )
+        }
+    }
+
+    fun obtenerGastoTarjetaXMes(): List<GastoMensualDTO> {
+        return HomeDataSoucrce.obtenerGastoTarjetaXMes().map {
+            GastoMensualDTO(
+                fecha = it.fecha,
+                monto = it.monto
+            )
+        }
+    }
+
+    fun obtenerProdcutosTarjetaMasCompradosPorMes(mes: Int, anio: Int): List<ProductoDTO> {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerProdcutosTarjetaMasComprados(mesStr, anioStr).map {
+            ProductoDTO(
+                nombre = it.nombre,
+                cant_veces = it.cant_veces
+            )
+        }
+    }
+
+    fun obtenerTicketsTarjetaPorMes(mes: Int, anio: Int): List<TicketTarjetaResumen> {
+        val mesStr = mes.toString().padStart(2, '0')
+        val anioStr = anio.toString()
+        return HomeDataSoucrce.obtenerTicketsTarjetaPorMes(mesStr, anioStr)
     }
 }

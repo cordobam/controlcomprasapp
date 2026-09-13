@@ -1,5 +1,7 @@
 package com.example.controlcomprasapp.data.repository
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.controlcomprasapp.data.local.datasource.GastoDataSource
 import com.example.controlcomprasapp.domain.model.GastoFijo
 import com.example.controlcomprasapp.domain.model.GastoMensual
@@ -40,6 +42,7 @@ class GastoRepository(private val dataSource: GastoDataSource) {
     fun inicializarGastosFijosDelMes(mes: Int, anio: Int) =
         dataSource.inicializarGastosFijosDelMes(mes, anio)
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun copiarGastosFijosDelMesAnterior(mes: Int, anio: Int): Int =
         dataSource.copiarGastosFijosDelMesAnterior(mes, anio)
 

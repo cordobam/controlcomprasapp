@@ -15,6 +15,12 @@ import com.example.controlcomprasapp.data.repository.HomeRepository
 
 @RequiresApi(Build.VERSION_CODES.O)
 class HomeViewModel(private val repository: HomeRepository): ViewModel() {
+
+    // Modo actual: false = Gasto Mes (COMPRA), true = Gasto TC (TARJETA)
+    var modoTarjeta by mutableStateOf(false)
+        private set
+
+    // Estados modo COMPRA (actuales)
     var items by mutableStateOf<List<DescuentosDTO>>(emptyList())
         private set
     var items_gastos by mutableStateOf<List<ItemTicketDTO>>(emptyList())
@@ -34,12 +40,39 @@ class HomeViewModel(private val repository: HomeRepository): ViewModel() {
     var ticketPromedio by mutableStateOf(0)
         private set
 
+    // Estados modo TARJETA (nuevos)
+    var totalTarjeta by mutableStateOf(0.0)
+        private set
+    var cantidadTarjetas by mutableStateOf(0)
+        private set
+    var items_gastos_tarjeta by mutableStateOf<List<ItemTicketDTO>>(emptyList())
+        private set
+    var items_descuentos_tarjeta by mutableStateOf<List<DescuentosDTO>>(emptyList())
+        private set
+    var items_productos_tarjeta by mutableStateOf<List<ProductoDTO>>(emptyList())
+        private set
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun loadMeses(){
         items_mes = repository.obtenerMeses()
     }
 
+    fun toggleModoTarjeta() {
+        modoTarjeta = !modoTarjeta
+        // Recargar mes actual si hay uno seleccionado
+        val mesActual = items_mes.firstOrNull()
+        mesActual?.let { cargarDatosPorMes(it.mes, it.anio) }
+    }
+
     fun cargarDatosPorMes(mes: Int, anio: Int) {
+        if (modoTarjeta) {
+            cargarDatosTarjetaPorMes(mes, anio)
+        } else {
+            cargarDatosComprasPorMes(mes, anio)
+        }
+    }
+
+    private fun cargarDatosComprasPorMes(mes: Int, anio: Int) {
         items = repository.obtenerDescuentosPorMes(mes, anio)
         items_gastos = repository.obtenerGastoXRubroPorMes(mes, anio)
         items_prductos = repository.obtenerProdcutosMasCompradosPorMes(mes, anio)
@@ -49,5 +82,15 @@ class HomeViewModel(private val repository: HomeRepository): ViewModel() {
         totalAhorrado = repository.obtenerTotalAhorradoPorMes(mes, anio).toInt()
         cantidadTickets = repository.obtenerCantidadTicketsPorMes(mes, anio)
         ticketPromedio = if (cantidadTickets > 0) (gastado / cantidadTickets).toInt() else 0
+    }
+
+    private fun cargarDatosTarjetaPorMes(mes: Int, anio: Int) {
+        items_descuentos_tarjeta = repository.obtenerDescuentosTarjetaPorMes(mes, anio)
+        items_gastos_tarjeta = repository.obtenerGastoTarjetaXRubroPorMes(mes, anio)
+        items_productos_tarjeta = repository.obtenerProdcutosTarjetaMasCompradosPorMes(mes, anio)
+
+        val gastado = repository.obtenerTotalTarjetaPorMes(mes, anio)
+        totalTarjeta = gastado
+        cantidadTarjetas = repository.obtenerCantidadTicketsTarjetaPorMes(mes, anio)
     }
 }
